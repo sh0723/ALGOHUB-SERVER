@@ -4,12 +4,15 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.gamzabat.algohub.dto.RegisterRequest;
+import com.gamzabat.algohub.dto.SignInRequest;
+import com.gamzabat.algohub.dto.SignInResponse;
 import com.gamzabat.algohub.exception.RequestException;
 import com.gamzabat.algohub.service.UserService;
 
@@ -33,5 +36,14 @@ public class UserController {
 			throw new RequestException("올바르지 않은 요청입니다.",errors);
 		userService.register(request, profileImage);
 		return ResponseEntity.ok().body("OK");
+	}
+
+	@PostMapping(value = "/sign-in")
+	@Operation(summary = "로그인 API")
+	public ResponseEntity<Object> signIn(@Valid @RequestBody SignInRequest request, Errors errors){
+		if(errors.hasErrors())
+			throw new RequestException("로그인 요청이 올바르지 않습니다.",errors);
+		SignInResponse response = userService.signIn(request);
+		return ResponseEntity.ok().body(response);
 	}
 }
