@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -16,9 +17,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import com.gamzabat.algohub.dto.JwtDTO;
-
+import com.gamzabat.algohub.exception.JwtRequestException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -63,7 +65,7 @@ public class TokenProvider {
 	public Authentication getAuthentication(String token){
 		Claims claims = parseClaims(token);
 		if (claims.get("auth") == null)
-			throw new RuntimeException("권한 정보가 없는 토큰 입니다.");
+			throw new JwtRequestException(HttpStatus.BAD_REQUEST.value(), "BAD_REQUEST", "권한 정보가 비어있습니다.");
 
 		Collection<? extends GrantedAuthority> authorities = Arrays.stream(claims.get("auth").toString().split(","))
 			.map(SimpleGrantedAuthority::new)
@@ -80,13 +82,13 @@ public class TokenProvider {
 				.build().parseClaimsJws(token);
 			return true;
 		} catch (SecurityException | MalformedJwtException e){
-			throw new RuntimeException("검증되지 않은 토큰입니다.");
+			throw new JwtRequestException(HttpStatus.UNAUTHORIZED.value(),"UNAUTHORIZED","검증되지 않은 토큰입니다.");
 		} catch (ExpiredJwtException e){
-			throw new RuntimeException("만료된 토큰입니다.");
+			throw new JwtRequestException(HttpStatus.UNAUTHORIZED.value(),"UNAUTHORIZED","만료된 토큰 입니다.");
 		} catch (UnsupportedJwtException e){
-			throw new RuntimeException("지원하지 않는 형태의 토큰입니다.");
+			throw new JwtRequestException(HttpStatus.BAD_REQUEST.value(),"BAD_REQUEST","지원하지 않는 형태의 토큰입니다.");
 		} catch (IllegalArgumentException e){
-			throw new RuntimeException("토큰 정보가 비어있습니다.");
+			throw new JwtRequestException(HttpStatus.BAD_REQUEST.value(),"BAD_REQUEST","토큰이 비어있습니다.");
 		}
 	}
 
@@ -98,4 +100,9 @@ public class TokenProvider {
 			.getBody();
 	}
 
+	public String getUserEmail(String authToken){
+		String token = authToken.replace("Bearer","").trim();
+		Jws<Claims> claimsJws = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+		return claimsJws.getBody().getSubject();
+	}
 }

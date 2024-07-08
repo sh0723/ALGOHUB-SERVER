@@ -18,7 +18,7 @@ public class SwaggerConfig {
 		SecurityScheme scheme = new SecurityScheme()
 			.type(SecurityScheme.Type.HTTP).scheme("bearer").bearerFormat("JWT")
 			.in(SecurityScheme.In.HEADER).name("Authorization");
-		SecurityRequirement requirement = new SecurityRequirement().addList("bearerAUth");
+		SecurityRequirement requirement = new SecurityRequirement().addList("bearerAuth");
 
 		return new OpenAPI()
 			.components(new Components().addSecuritySchemes("bearerAuth",scheme))
