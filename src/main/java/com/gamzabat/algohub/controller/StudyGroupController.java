@@ -2,6 +2,7 @@ package com.gamzabat.algohub.controller;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,6 +38,13 @@ public class StudyGroupController {
 	@Operation(summary = "그룹 코드를 사용한 그룹 참여 API")
 	public ResponseEntity<Object> joinGroupWithCode(@AuthedUser User user, @PathVariable String code){
 		studyGroupService.joinGroupWithCode(user,code);
+		return ResponseEntity.ok().body("OK");
+	}
+
+	@DeleteMapping
+	@Operation(summary = "그룹 탈퇴 API", description = "방장,멤버 상관 없이 해당 그룹을 삭제,탈퇴하는 API")
+	public ResponseEntity<Object> deleteGroup(@AuthedUser User user, @RequestParam Long groupId){
+		studyGroupService.deleteGroup(user,groupId);
 		return ResponseEntity.ok().body("OK");
 	}
 

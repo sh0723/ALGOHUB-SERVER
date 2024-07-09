@@ -19,6 +19,10 @@ public class CustomExceptionHandler {
 
 	@ExceptionHandler(StudyGroupValidationException.class)
 	protected ResponseEntity<Object> handler(StudyGroupValidationException e){
-		return ResponseEntity.badRequest().body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), e.getError(), null));
+		return ResponseEntity.status(e.getCode()).body(new ErrorResponse(e.getCode(), e.getError(), null));
+	}
+	@ExceptionHandler(GroupMemberValidationException.class)
+	protected ResponseEntity<Object> handler(GroupMemberValidationException e){
+		return ResponseEntity.status(e.getCode()).body(new ErrorResponse(e.getCode(), e.getError(), null));
 	}
 }
