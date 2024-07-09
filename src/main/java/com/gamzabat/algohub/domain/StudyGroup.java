@@ -42,4 +42,7 @@ public class StudyGroup {
 		this.groupCode = groupCode;
 		this.owner = owner;
 	}
+
+	public void editName(String name){this.name = name;}
+	public void editGroupImage(String groupImage){this.groupImage = groupImage;}
 }

@@ -4,8 +4,10 @@ import java.util.List;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,11 +18,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.gamzabat.algohub.common.annotation.AuthedUser;
 import com.gamzabat.algohub.domain.User;
+import com.gamzabat.algohub.dto.EditGroupRequest;
 import com.gamzabat.algohub.dto.GetStudyGroupResponse;
+import com.gamzabat.algohub.exception.RequestException;
 import com.gamzabat.algohub.service.StudyGroupService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -56,6 +61,17 @@ public class StudyGroupController {
 	@Operation(summary = "그룹 탈퇴 API", description = "방장,멤버 상관 없이 해당 그룹을 삭제,탈퇴하는 API")
 	public ResponseEntity<Object> deleteGroup(@AuthedUser User user, @RequestParam Long groupId){
 		studyGroupService.deleteGroup(user,groupId);
+		return ResponseEntity.ok().body("OK");
+	}
+
+	@PatchMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(summary = "그룹 정보 수정 API")
+	public ResponseEntity<Object> editGroup(@AuthedUser User user,
+		@Valid @RequestPart EditGroupRequest request, Errors errors,
+		@RequestPart(required = false) MultipartFile groupImage){
+		if(errors.hasErrors())
+			throw new RequestException("그룹 정보 수정 요청이 올바르지 않습니다.",errors);
+		studyGroupService.editGroup(user,request,groupImage);
 		return ResponseEntity.ok().body("OK");
 	}
 

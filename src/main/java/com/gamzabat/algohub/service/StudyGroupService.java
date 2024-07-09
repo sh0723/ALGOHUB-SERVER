@@ -11,6 +11,7 @@ import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 import com.gamzabat.algohub.domain.GroupMember;
 import com.gamzabat.algohub.domain.StudyGroup;
 import com.gamzabat.algohub.domain.User;
+import com.gamzabat.algohub.dto.EditGroupRequest;
 import com.gamzabat.algohub.dto.GetStudyGroupResponse;
 import com.gamzabat.algohub.exception.GroupMemberValidationException;
 import com.gamzabat.algohub.exception.StudyGroupValidationException;
@@ -80,5 +81,21 @@ public class StudyGroupService {
 			.map(group -> GetStudyGroupResponse.toDTO(group,user)).toList();
 		log.info("success to get study group list");
 		return list;
+	}
+
+	public void editGroup(User user, EditGroupRequest request, MultipartFile groupImage) {
+		StudyGroup group = groupRepository.findById(request.id())
+			.orElseThrow(() -> new StudyGroupValidationException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 그룹 입니다."));
+		if(!group.getOwner().getId().equals(user.getId()))
+			throw new StudyGroupValidationException(HttpStatus.FORBIDDEN.value(), "그룹 정보 수정에 대한 권한이 없습니다.");
+
+		if(request.name() != null && !request.name().equals(group.getName()))
+			group.editName(request.name());
+		if(groupImage != null){
+			imageService.deleteImage(group.getGroupImage());
+			String imageUrl = imageService.saveImage(groupImage);
+			group.editGroupImage(imageUrl);
+		}
+		log.info("success to edit group info");
 	}
 }
