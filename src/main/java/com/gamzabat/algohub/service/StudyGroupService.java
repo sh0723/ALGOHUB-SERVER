@@ -1,6 +1,7 @@
 package com.gamzabat.algohub.service;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -10,6 +11,7 @@ import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 import com.gamzabat.algohub.domain.GroupMember;
 import com.gamzabat.algohub.domain.StudyGroup;
 import com.gamzabat.algohub.domain.User;
+import com.gamzabat.algohub.dto.GetStudyGroupResponse;
 import com.gamzabat.algohub.exception.GroupMemberValidationException;
 import com.gamzabat.algohub.exception.StudyGroupValidationException;
 import com.gamzabat.algohub.repository.GroupMemberRepository;
@@ -70,5 +72,13 @@ public class StudyGroupService {
 			groupMemberRepository.delete(member);
 		}
 		log.info("success to delete(exit) study group");
+	}
+
+	public List<GetStudyGroupResponse> getStudyGroupList(User user) {
+		List<StudyGroup> groups = groupRepository.findByUser(user);
+		List<GetStudyGroupResponse> list = groups.stream()
+			.map(group -> GetStudyGroupResponse.toDTO(group,user)).toList();
+		log.info("success to get study group list");
+		return list;
 	}
 }

@@ -1,8 +1,11 @@
 package com.gamzabat.algohub.controller;
 
+import java.util.List;
+
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.gamzabat.algohub.common.annotation.AuthedUser;
 import com.gamzabat.algohub.domain.User;
+import com.gamzabat.algohub.dto.GetStudyGroupResponse;
 import com.gamzabat.algohub.service.StudyGroupService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,6 +43,13 @@ public class StudyGroupController {
 	public ResponseEntity<Object> joinGroupWithCode(@AuthedUser User user, @PathVariable String code){
 		studyGroupService.joinGroupWithCode(user,code);
 		return ResponseEntity.ok().body("OK");
+	}
+
+	@GetMapping
+	@Operation(summary = "그룹 목록 조회 API", description = "방장 여부 상관 없이 유저가 참여하고 있는 그룹 모두 조회")
+	public ResponseEntity<List<GetStudyGroupResponse>> getStudyGroupList(@AuthedUser User user){
+		List<GetStudyGroupResponse> response = studyGroupService.getStudyGroupList(user);
+		return ResponseEntity.ok().body(response);
 	}
 
 	@DeleteMapping
