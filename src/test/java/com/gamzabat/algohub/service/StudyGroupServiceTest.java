@@ -5,6 +5,8 @@ import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Field;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -22,6 +24,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import com.gamzabat.algohub.domain.GroupMember;
 import com.gamzabat.algohub.domain.StudyGroup;
 import com.gamzabat.algohub.domain.User;
+import com.gamzabat.algohub.dto.GetStudyGroupResponse;
 import com.gamzabat.algohub.enums.Role;
 import com.gamzabat.algohub.exception.GroupMemberValidationException;
 import com.gamzabat.algohub.exception.StudyGroupValidationException;
@@ -175,6 +178,32 @@ class StudyGroupServiceTest {
 			.isInstanceOf(GroupMemberValidationException.class)
 			.hasFieldOrPropertyWithValue("code", HttpStatus.BAD_REQUEST.value())
 			.hasFieldOrPropertyWithValue("error","이미 참여하지 않은 그룹 입니다.");
+	}
+
+	@Test
+	@DisplayName("그룹 목록 조회")
+	void getGroupList(){
+		// given
+		List<StudyGroup> groups = new ArrayList<>(30);
+		for(int i=0; i<30; i++){
+			groups.add(StudyGroup.builder()
+				.name("name"+i)
+				.owner(user)
+				.groupImage("imageUrl"+i)
+				.groupCode("code"+i)
+				.build());
+		}
+		when(studyGroupRepository.findByUser(user)).thenReturn(groups);
+		// when
+		List<GetStudyGroupResponse> result = studyGroupService.getStudyGroupList(user);
+		// then
+		assertThat(result.size()).isEqualTo(30);
+		for(int i=0; i<30; i++){
+			assertThat(result.get(i).name()).isEqualTo("name"+i);
+			assertThat(result.get(i).ownerNickname()).isEqualTo("nickname");
+			assertThat(result.get(i).groupImage()).isEqualTo("imageUrl"+i);
+			assertThat(result.get(i).isOwner()).isTrue();
+		}
 	}
 
 
