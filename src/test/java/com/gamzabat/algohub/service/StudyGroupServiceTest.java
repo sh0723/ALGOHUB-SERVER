@@ -24,6 +24,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import com.gamzabat.algohub.domain.GroupMember;
 import com.gamzabat.algohub.domain.StudyGroup;
 import com.gamzabat.algohub.domain.User;
+import com.gamzabat.algohub.dto.EditGroupRequest;
 import com.gamzabat.algohub.dto.GetStudyGroupResponse;
 import com.gamzabat.algohub.enums.Role;
 import com.gamzabat.algohub.exception.GroupMemberValidationException;
@@ -206,6 +207,47 @@ class StudyGroupServiceTest {
 		}
 	}
 
+	@Test
+	@DisplayName("그룹 정보 수정 성공")
+	void editGroup(){
+		// given
+		EditGroupRequest request = new EditGroupRequest(10L,"editName");
+		MockMultipartFile editImage = new MockMultipartFile("editImage",new byte[]{1,2,3});
+		when(imageService.saveImage(editImage)).thenReturn("editImage");
+		when(studyGroupRepository.findById(anyLong())).thenReturn(Optional.ofNullable(group));
+		// when
+		studyGroupService.editGroup(user,request,editImage);
+		// then
+		assertThat(group.getName()).isEqualTo("editName");
+		assertThat(group.getGroupImage()).isEqualTo("editImage");
+	}
 
+	@Test
+	@DisplayName("그룹 정보 수정 실패 : 존재하지 않는 그룹")
+	void editGroupFailed_1(){
+		// given
+		EditGroupRequest request = new EditGroupRequest(10L,"editName");
+		MockMultipartFile editImage = new MockMultipartFile("editImage",new byte[]{1,2,3});
+		when(studyGroupRepository.findById(10L)).thenReturn(Optional.empty());
+		// when, then
+		assertThatThrownBy(() -> studyGroupService.editGroup(user,request,editImage))
+			.isInstanceOf(StudyGroupValidationException.class)
+			.hasFieldOrPropertyWithValue("code",HttpStatus.NOT_FOUND.value())
+			.hasFieldOrPropertyWithValue("error","존재하지 않는 그룹 입니다.");
+	}
+
+	@Test
+	@DisplayName("그룹 정보 수정 실패 : 권한 없음")
+	void editGroupFailed_2(){
+		// given
+		EditGroupRequest request = new EditGroupRequest(10L,"editName");
+		MockMultipartFile editImage = new MockMultipartFile("editImage",new byte[]{1,2,3});
+		when(studyGroupRepository.findById(10L)).thenReturn(Optional.ofNullable(group));
+		// when, then
+		assertThatThrownBy(() -> studyGroupService.editGroup(user2,request,editImage))
+			.isInstanceOf(StudyGroupValidationException.class)
+			.hasFieldOrPropertyWithValue("code",HttpStatus.FORBIDDEN.value())
+			.hasFieldOrPropertyWithValue("error","그룹 정보 수정에 대한 권한이 없습니다.");
+	}
 
 }
