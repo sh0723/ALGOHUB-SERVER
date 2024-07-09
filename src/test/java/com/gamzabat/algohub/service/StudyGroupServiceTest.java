@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Field;
+import java.time.LocalDate;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -15,12 +16,14 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockMultipartFile;
 
 import com.gamzabat.algohub.domain.GroupMember;
 import com.gamzabat.algohub.domain.StudyGroup;
 import com.gamzabat.algohub.domain.User;
 import com.gamzabat.algohub.enums.Role;
+import com.gamzabat.algohub.exception.GroupMemberValidationException;
 import com.gamzabat.algohub.exception.StudyGroupValidationException;
 import com.gamzabat.algohub.repository.GroupMemberRepository;
 import com.gamzabat.algohub.repository.StudyGroupRepository;
@@ -55,6 +58,10 @@ class StudyGroupServiceTest {
 		userField.setAccessible(true);
 		userField.set(user,1L);
 		userField.set(user2,2L);
+
+		Field groupId = StudyGroup.class.getDeclaredField("id");
+		groupId.setAccessible(true);
+		groupId.set(group,10L);
 	}
 
 	@Test
@@ -120,6 +127,56 @@ class StudyGroupServiceTest {
 			.isInstanceOf(StudyGroupValidationException.class)
 			.hasFieldOrPropertyWithValue("error","이미 참여한 그룹 입니다.");
 	}
+
+	@Test
+	@DisplayName("그룹 삭제 성공 (주인)")
+	void deleteGroup(){
+		// given
+		when(studyGroupRepository.findById(10L)).thenReturn(Optional.of(group));
+		// when
+		studyGroupService.deleteGroup(user,10L);
+		// then
+		verify(studyGroupRepository,times(1)).delete(group);
+	}
+
+	@Test
+	@DisplayName("그룹 삭제 성공 (멤버)")
+	void exitGroup(){
+		// given
+		GroupMember groupMember = GroupMember.builder().studyGroup(group).user(user2).joinDate(LocalDate.now()).build();
+		when(studyGroupRepository.findById(10L)).thenReturn(Optional.ofNullable(group));
+		when(groupMemberRepository.findByUserAndStudyGroup(user2,group)).thenReturn(Optional.of(groupMember));
+		// when
+		studyGroupService.deleteGroup(user2,10L);
+		// then
+		verify(groupMemberRepository,times(1)).delete(groupMember);
+	}
+
+	@Test
+	@DisplayName("그룹 삭제 실패 : 존재하지 않는 그룹")
+	void deleteGroupFailed_1(){
+		// given
+		when(studyGroupRepository.findById(10L)).thenReturn(Optional.empty());
+		// when, then
+		assertThatThrownBy(() -> studyGroupService.deleteGroup(user,10L))
+			.isInstanceOf(StudyGroupValidationException.class)
+			.hasFieldOrPropertyWithValue("code", HttpStatus.NOT_FOUND.value())
+			.hasFieldOrPropertyWithValue("error","존재하지 않는 그룹 입니다.");
+	}
+
+	@Test
+	@DisplayName("그룹 삭제 실패 : 이미 참여하지 않은 그룹")
+	void deleteGroupFailed_2(){
+		// given
+		when(studyGroupRepository.findById(10L)).thenReturn(Optional.ofNullable(group));
+		when(groupMemberRepository.findByUserAndStudyGroup(user2,group)).thenReturn(Optional.empty());
+		// when, then
+		assertThatThrownBy(() -> studyGroupService.deleteGroup(user2,10L))
+			.isInstanceOf(GroupMemberValidationException.class)
+			.hasFieldOrPropertyWithValue("code", HttpStatus.BAD_REQUEST.value())
+			.hasFieldOrPropertyWithValue("error","이미 참여하지 않은 그룹 입니다.");
+	}
+
 
 
 }
