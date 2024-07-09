@@ -24,13 +24,13 @@ public class StudyGroup {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "owner_id")
-	private User user;
+	private User owner;
 
 	@Builder
-	public StudyGroup(String name, String groupImage, String groupCode, User user) {
+	public StudyGroup(String name, String groupImage, String groupCode, User owner) {
 		this.name = name;
 		this.groupImage = groupImage;
 		this.groupCode = groupCode;
-		this.user = user;
+		this.owner = owner;
 	}
 }
