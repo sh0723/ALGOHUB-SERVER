@@ -1,6 +1,10 @@
 package com.gamzabat.algohub.domain;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -16,6 +20,8 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor
+@SQLRestriction("deleted_at IS NULL")
+@SQLDelete(sql = "UPDATE Problem SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
 public class Problem {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,6 +33,7 @@ public class Problem {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "study_group_id")
 	private StudyGroup studyGroup;
+	private LocalDateTime deletedAt;
 
 	@Builder
 	public Problem(String link, LocalDate deadline, String title, Integer level, StudyGroup studyGroup) {

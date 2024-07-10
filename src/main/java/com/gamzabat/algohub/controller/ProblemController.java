@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -57,6 +58,13 @@ public class ProblemController {
 	public ResponseEntity<List<GetProblemResponse>> getProblemList(@AuthedUser User user, @RequestParam Long groupId){
 		List<GetProblemResponse> response = problemService.getProblemList(user, groupId);
 		return ResponseEntity.ok().body(response);
+	}
+
+	@DeleteMapping
+	@Operation(summary = "문제 삭제 API")
+	public ResponseEntity<Object> deleteProblem(@AuthedUser User user, @RequestParam Long problemId){
+		problemService.deleteProblem(user,problemId);
+		return ResponseEntity.ok().body("OK");
 	}
 
 }

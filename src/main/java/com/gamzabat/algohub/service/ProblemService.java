@@ -44,8 +44,7 @@ public class ProblemService {
 	}
 
 	public void editProblem(User user, EditProblemRequest request) {
-		Problem problem = problemRepository.findById(request.problemId())
-			.orElseThrow(() -> new ProblemValidationException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 문제 입니다."));
+		Problem problem = getProblem(request.problemId());
 		StudyGroup group = getGroup(problem.getStudyGroup().getId());
 		checkOwnerPermission(user, group, "edit");
 
@@ -63,6 +62,20 @@ public class ProblemService {
 		List<GetProblemResponse> list = problems.stream().map(GetProblemResponse::toDTO).toList();
 		log.info("success to get problem list");
 		return list;
+	}
+
+	public void deleteProblem(User user, Long problemId) {
+		Problem problem = getProblem(problemId);
+		StudyGroup group = getGroup(problem.getStudyGroup().getId());
+		checkOwnerPermission(user, group, "delete");
+
+		problemRepository.delete(problem);
+		log.info("success to delete problem");
+	}
+
+	private Problem getProblem(Long problemId) {
+		return problemRepository.findById(problemId)
+			.orElseThrow(() -> new ProblemValidationException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 문제 입니다."));
 	}
 
 	private StudyGroup getGroup(Long id) {
