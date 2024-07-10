@@ -1,5 +1,6 @@
 package com.gamzabat.algohub.service;
 
+import com.gamzabat.algohub.dto.*;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -9,10 +10,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.gamzabat.algohub.common.jwt.TokenProvider;
 import com.gamzabat.algohub.domain.User;
-import com.gamzabat.algohub.dto.JwtDTO;
-import com.gamzabat.algohub.dto.RegisterRequest;
-import com.gamzabat.algohub.dto.SignInRequest;
-import com.gamzabat.algohub.dto.SignInResponse;
 import com.gamzabat.algohub.enums.Role;
 import com.gamzabat.algohub.exception.UserValidationException;
 import com.gamzabat.algohub.repository.UserRepository;
@@ -20,6 +17,8 @@ import com.gamzabat.algohub.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -58,5 +57,10 @@ public class UserService {
 	private void checkEmailDuplication(String email){
 		if(userRepository.existsByEmail(email))
 			throw new UserValidationException("이미 가입 된 이메일 입니다.");
+	}
+
+	public UserInfoResponse userInfo(String email) {
+		Optional<User> user = userRepository.findByEmail(email);
+		return new UserInfoResponse(user.get().getEmail(), user.get().getNickname(),user.get().getProfileImage());
 	}
 }

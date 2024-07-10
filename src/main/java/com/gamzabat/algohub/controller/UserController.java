@@ -1,14 +1,13 @@
 package com.gamzabat.algohub.controller;
 
+import com.gamzabat.algohub.common.jwt.TokenProvider;
+import com.gamzabat.algohub.dto.UserInfoResponse;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.Errors;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.gamzabat.algohub.common.annotation.AuthedUser;
@@ -30,6 +29,7 @@ import lombok.RequiredArgsConstructor;
 @Tag(name = "회원 컨트롤러", description = "회원 관련된 API 명세서")
 public class UserController {
 	private final UserService userService;
+	private final TokenProvider tokenProvider;
 
 	@PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "회원 가입 API")
@@ -48,6 +48,13 @@ public class UserController {
 			throw new RequestException("로그인 요청이 올바르지 않습니다.",errors);
 		SignInResponse response = userService.signIn(request);
 		return ResponseEntity.ok().body(response);
+	}
+
+	@GetMapping(value = "/user-info")
+	public ResponseEntity<UserInfoResponse> userInfo(@RequestHeader("Authorization") String token){
+		String email = tokenProvider.getUserEmail(token);
+		UserInfoResponse userInfo = userService.userInfo(email);
+		return ResponseEntity.ok().body(userInfo);
 	}
 
 	@GetMapping(value = "/test")
