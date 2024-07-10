@@ -22,7 +22,9 @@ import com.gamzabat.algohub.domain.Problem;
 import com.gamzabat.algohub.domain.StudyGroup;
 import com.gamzabat.algohub.domain.User;
 import com.gamzabat.algohub.dto.CreateProblemRequest;
+import com.gamzabat.algohub.dto.EditProblemRequest;
 import com.gamzabat.algohub.enums.Role;
+import com.gamzabat.algohub.exception.ProblemValidationException;
 import com.gamzabat.algohub.exception.StudyGroupValidationException;
 import com.gamzabat.algohub.repository.ProblemRepository;
 import com.gamzabat.algohub.repository.StudyGroupRepository;
@@ -39,6 +41,7 @@ class ProblemServiceTest {
 	private User user;
 	private User user2;
 	private StudyGroup group;
+	private Problem problem;
 	@Captor
 	private ArgumentCaptor<Problem> problemCaptor;
 
@@ -49,6 +52,7 @@ class ProblemServiceTest {
 		user2 = User.builder().email("email2").password("password").nickname("nickname")
 			.role(Role.USER).profileImage("image").build();
 		group = StudyGroup.builder().name("name").owner(user).groupImage("imageUrl").groupCode("code").build();
+		problem = Problem.builder().studyGroup(group).link("link").deadline(LocalDate.now()).build();
 
 		Field userField = User.class.getDeclaredField("id");
 		userField.setAccessible(true);
@@ -58,6 +62,10 @@ class ProblemServiceTest {
 		Field groupId = StudyGroup.class.getDeclaredField("id");
 		groupId.setAccessible(true);
 		groupId.set(group,10L);
+
+		Field problemId = Problem.class.getDeclaredField("id");
+		problemId.setAccessible(true);
+		problemId.set(problem,20L);
 	}
 
 	@Test
@@ -65,7 +73,7 @@ class ProblemServiceTest {
 	void createProblem() {
 		// given
 		CreateProblemRequest request = CreateProblemRequest.builder()
-			.id(10L)
+			.groupId(10L)
 			.link("link")
 			.deadline(LocalDate.now())
 			.build();
@@ -85,7 +93,7 @@ class ProblemServiceTest {
 	void createProblemFailed_1(){
 		// given
 		CreateProblemRequest request = CreateProblemRequest.builder()
-			.id(10L)
+			.groupId(10L)
 			.link("link")
 			.deadline(LocalDate.now())
 			.build();
@@ -101,7 +109,7 @@ class ProblemServiceTest {
 	void createProblemFailed_2(){
 		// given
 		CreateProblemRequest request = CreateProblemRequest.builder()
-			.id(10L)
+			.groupId(10L)
 			.link("link")
 			.deadline(LocalDate.now())
 			.build();
@@ -112,6 +120,73 @@ class ProblemServiceTest {
 			.hasFieldOrPropertyWithValue("code", HttpStatus.FORBIDDEN.value())
 			.hasFieldOrPropertyWithValue("error","문제에 대한 권한이 없습니다. : create");
 	}
+
+	@Test
+	@DisplayName("문제 마감 기한 수정 성공")
+	void editProblem(){
+		// given
+		EditProblemRequest request = EditProblemRequest.builder()
+			.problemId(20L)
+			.deadline(LocalDate.now().plusDays(3))
+			.build();
+		when(problemRepository.findById(20L)).thenReturn(Optional.ofNullable(problem));
+		when(groupRepository.findById(10L)).thenReturn(Optional.ofNullable(group));
+		// when
+		problemService.editProblem(user,request);
+		// then
+		assertThat(problem.getDeadline()).isEqualTo(request.deadline());
+	}
+
+	@Test
+	@DisplayName("문제 마감 기한 수정 실패 : 존재하지 않는 그룹")
+	void editProblemFailed_1(){
+		// given
+		EditProblemRequest request = EditProblemRequest.builder()
+			.problemId(20L)
+			.deadline(LocalDate.now().plusDays(3))
+			.build();
+		when(problemRepository.findById(20L)).thenReturn(Optional.ofNullable(problem));
+		when(groupRepository.findById(10L)).thenReturn(Optional.empty());
+		// when, then
+		assertThatThrownBy(() -> problemService.editProblem(user, request))
+			.isInstanceOf(StudyGroupValidationException.class)
+			.hasFieldOrPropertyWithValue("code",HttpStatus.NOT_FOUND.value())
+			.hasFieldOrPropertyWithValue("error","존재하지 않는 그룹 입니다.");
+	}
+
+	@Test
+	@DisplayName("문제 마감 기한 수정 실패 : 존재하지 않는 문제")
+	void editProblemFailed_2(){
+		// given
+		EditProblemRequest request = EditProblemRequest.builder()
+			.problemId(20L)
+			.deadline(LocalDate.now().plusDays(3))
+			.build();
+		when(problemRepository.findById(20L)).thenReturn(Optional.empty());
+		// when, then
+		assertThatThrownBy(() -> problemService.editProblem(user, request))
+			.isInstanceOf(ProblemValidationException.class)
+			.hasFieldOrPropertyWithValue("code",HttpStatus.NOT_FOUND.value())
+			.hasFieldOrPropertyWithValue("error","존재하지 않는 문제 입니다.");
+	}
+
+	@Test
+	@DisplayName("문제 마감 기한 수정 실패 : 권한 없음")
+	void editProblemFailed_3(){
+		// given
+		EditProblemRequest request = EditProblemRequest.builder()
+			.problemId(20L)
+			.deadline(LocalDate.now().plusDays(3))
+			.build();
+		when(problemRepository.findById(20L)).thenReturn(Optional.ofNullable(problem));
+		when(groupRepository.findById(10L)).thenReturn(Optional.ofNullable(group));
+		// when, then
+		assertThatThrownBy(() -> problemService.editProblem(user2, request))
+			.isInstanceOf(StudyGroupValidationException.class)
+			.hasFieldOrPropertyWithValue("code",HttpStatus.FORBIDDEN.value())
+			.hasFieldOrPropertyWithValue("error","문제에 대한 권한이 없습니다. : edit");
+	}
+
 
 
 }
