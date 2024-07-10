@@ -4,18 +4,19 @@ import java.time.LocalDateTime;
 
 import com.gamzabat.algohub.enums.Role;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
 @NoArgsConstructor
+@SQLRestriction("deleted_at IS NULL")
+@SQLDelete(sql = "UPDATE user SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
 public class User {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,8 +26,12 @@ public class User {
 	private String password;
 	private String nickname;
 	private String profileImage;
+
+	@Column(name = "deleted_at")
 	private LocalDateTime deletedAt;
+
 	private Role role;
+
 
 	@Builder
 	public User(String email, String password, String nickname, String profileImage, Role role) {

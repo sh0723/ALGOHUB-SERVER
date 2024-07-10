@@ -1,6 +1,8 @@
 package com.gamzabat.algohub.service;
 
 import com.gamzabat.algohub.dto.*;
+import com.gamzabat.algohub.exception.UncorrectedPasswordException;
+import org.hibernate.sql.Delete;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -81,5 +83,19 @@ public class UserService {
 		if (updateRequest.getNickname() != null && !updateRequest.getNickname().isEmpty()) {
 			user.editNickname(updateRequest.getNickname());
 		}
+	}
+
+	public boolean deleteUser(String email, DeleteRequest deleteRequest) {
+		Optional<User> userOptional = userRepository.findByEmail(email);
+		if (userOptional.isEmpty()) {
+			throw new UserValidationException("사용자를 찾을 수 없습니다.");
+		}
+
+		if (!passwordEncoder.matches(deleteRequest.password(),userOptional.get().getPassword()))
+		{
+			return false;
+		}
+		userRepository.deleteByEmail(email);
+		return true;
 	}
 }

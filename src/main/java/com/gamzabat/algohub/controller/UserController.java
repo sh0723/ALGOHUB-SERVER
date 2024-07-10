@@ -67,6 +67,22 @@ public class UserController {
 		return ResponseEntity.ok().body("OK");
 	}
 
+	@DeleteMapping(value = "/delete-user")
+	public ResponseEntity<Object> deleteUser(@RequestHeader("Authorization") String token, @Valid @RequestPart DeleteRequest request, Errors errors){
+		if (errors.hasErrors()) {
+			throw new RequestException("올바르지 않은 요청입니다.",errors);
+		}
+
+		String email = tokenProvider.getUserEmail(token);
+		if (userService.deleteUser(email, request))
+		{
+			return ResponseEntity.ok().body("OK");
+		}
+		else
+		{
+			return ResponseEntity.ok().body("다시 입력하세요");
+		}
+	}
 
 	@GetMapping(value = "/test")
 	@Operation(summary = "테스트 API")
