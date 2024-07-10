@@ -1,7 +1,7 @@
 package com.gamzabat.algohub.controller;
 
 import com.gamzabat.algohub.common.jwt.TokenProvider;
-import com.gamzabat.algohub.dto.UserInfoResponse;
+import com.gamzabat.algohub.dto.*;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -12,9 +12,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.gamzabat.algohub.common.annotation.AuthedUser;
 import com.gamzabat.algohub.domain.User;
-import com.gamzabat.algohub.dto.RegisterRequest;
-import com.gamzabat.algohub.dto.SignInRequest;
-import com.gamzabat.algohub.dto.SignInResponse;
 import com.gamzabat.algohub.exception.RequestException;
 import com.gamzabat.algohub.service.UserService;
 
@@ -56,6 +53,20 @@ public class UserController {
 		UserInfoResponse userInfo = userService.userInfo(email);
 		return ResponseEntity.ok().body(userInfo);
 	}
+
+	@PatchMapping(value = "/update-user", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Object> updateInfo(@RequestHeader("Authorization") String token, @Valid @RequestPart UpdateRequest updateRequest, Errors errors, @RequestPart(required = false) MultipartFile profileImage){
+
+		if (errors.hasErrors()) {
+			throw new RequestException("올바르지 않은 요청입니다.", errors);
+		}
+
+		String email = tokenProvider.getUserEmail(token);
+		userService.userUpdate(email, updateRequest,profileImage);
+
+		return ResponseEntity.ok().body("OK");
+	}
+
 
 	@GetMapping(value = "/test")
 	@Operation(summary = "테스트 API")

@@ -59,8 +59,27 @@ public class UserService {
 			throw new UserValidationException("이미 가입 된 이메일 입니다.");
 	}
 
+
 	public UserInfoResponse userInfo(String email) {
 		Optional<User> user = userRepository.findByEmail(email);
 		return new UserInfoResponse(user.get().getEmail(), user.get().getNickname(),user.get().getProfileImage());
+	}
+
+	public void userUpdate(String email, UpdateRequest updateRequest, MultipartFile profileImage) {
+		Optional<User> userOptional = userRepository.findByEmail(email);
+		if (userOptional.isEmpty()) {
+			throw new UserValidationException("사용자를 찾을 수 없습니다.");
+		}
+
+		User user = userOptional.get();
+
+		if (profileImage != null && !profileImage.isEmpty()){
+			String imageUrl = imageService.saveImage(profileImage);
+			user.editProfileImage(imageUrl);
+		}
+
+		if (updateRequest.getNickname() != null && !updateRequest.getNickname().isEmpty()) {
+			user.editNickname(updateRequest.getNickname());
+		}
 	}
 }

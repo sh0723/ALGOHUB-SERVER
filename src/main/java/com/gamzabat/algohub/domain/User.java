@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
@@ -35,5 +36,13 @@ public class User {
 		this.profileImage = profileImage;
 		this.role = role;
 		this.deletedAt = null;
+	}
+
+	public void editNickname(String nickname){
+		this.nickname = nickname;
+	}
+
+	public void editProfileImage(String profileImage){
+		this.profileImage = profileImage;
 	}
 }
