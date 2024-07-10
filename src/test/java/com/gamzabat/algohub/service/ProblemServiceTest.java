@@ -5,6 +5,8 @@ import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Field;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -23,9 +25,11 @@ import com.gamzabat.algohub.domain.StudyGroup;
 import com.gamzabat.algohub.domain.User;
 import com.gamzabat.algohub.dto.CreateProblemRequest;
 import com.gamzabat.algohub.dto.EditProblemRequest;
+import com.gamzabat.algohub.dto.GetProblemResponse;
 import com.gamzabat.algohub.enums.Role;
 import com.gamzabat.algohub.exception.ProblemValidationException;
 import com.gamzabat.algohub.exception.StudyGroupValidationException;
+import com.gamzabat.algohub.repository.GroupMemberRepository;
 import com.gamzabat.algohub.repository.ProblemRepository;
 import com.gamzabat.algohub.repository.StudyGroupRepository;
 
@@ -37,6 +41,8 @@ class ProblemServiceTest {
 	private ProblemRepository problemRepository;
 	@Mock
 	private StudyGroupRepository groupRepository;
+	@Mock
+	private GroupMemberRepository groupMemberRepository;
 
 	private User user;
 	private User user2;
@@ -187,6 +193,54 @@ class ProblemServiceTest {
 			.hasFieldOrPropertyWithValue("error","문제에 대한 권한이 없습니다. : edit");
 	}
 
+	@Test
+	@DisplayName("문제 목록 조회 성공")
+	void getProblemList(){
+		// given
+		List<Problem> list = new ArrayList<>(30);
+		for(int i=0; i<30; i++){
+			list.add(Problem.builder()
+				.studyGroup(group)
+				.deadline(LocalDate.now().plusDays(i))
+				.link("link"+i)
+				.title("title"+i)
+				.build());
+		}
+		when(groupRepository.findById(10L)).thenReturn(Optional.ofNullable(group));
+		when(problemRepository.findAllByStudyGroup(group)).thenReturn(list);
+		// when
+		List<GetProblemResponse> result = problemService.getProblemList(user, 10L);
+		// then
+		assertThat(result.size()).isEqualTo(30);
+		for(int i=0; i<30; i++){
+			assertThat(result.get(i).deadline()).isEqualTo(LocalDate.now().plusDays(i));
+			assertThat(result.get(i).link()).isEqualTo("link"+i);
+			assertThat(result.get(i).title()).isEqualTo("title"+i);
+		}
+	}
 
+	@Test
+	@DisplayName("문제 목록 조회 실패 : 존재하지 않는 그룹")
+	void getProblemListFailed_1(){
+		// given
+		when(groupRepository.findById(10L)).thenReturn(Optional.empty());
+		// when, then
+		assertThatThrownBy(() -> problemService.getProblemList(user, 10L))
+			.isInstanceOf(StudyGroupValidationException.class)
+			.hasFieldOrPropertyWithValue("code",HttpStatus.NOT_FOUND.value())
+			.hasFieldOrPropertyWithValue("error","존재하지 않는 그룹 입니다.");
+	}
 
+	@Test
+	@DisplayName("문제 목록 조회 실패 : 문제 조회 권한 없음")
+	void getProblemListFailed_2(){
+		// given
+		when(groupRepository.findById(10L)).thenReturn(Optional.ofNullable(group));
+		when(groupMemberRepository.existsByUserAndStudyGroup(user2,group)).thenReturn(false);
+		// when, then
+		assertThatThrownBy(() -> problemService.getProblemList(user2, 10L))
+			.isInstanceOf(ProblemValidationException.class)
+			.hasFieldOrPropertyWithValue("code",HttpStatus.FORBIDDEN.value())
+			.hasFieldOrPropertyWithValue("error","문제를 조회할 권한이 없습니다.");
+	}
 }
