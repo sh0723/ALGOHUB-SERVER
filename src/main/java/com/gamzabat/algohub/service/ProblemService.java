@@ -1,5 +1,7 @@
 package com.gamzabat.algohub.service;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -8,8 +10,10 @@ import com.gamzabat.algohub.domain.StudyGroup;
 import com.gamzabat.algohub.domain.User;
 import com.gamzabat.algohub.dto.CreateProblemRequest;
 import com.gamzabat.algohub.dto.EditProblemRequest;
+import com.gamzabat.algohub.dto.GetProblemResponse;
 import com.gamzabat.algohub.exception.ProblemValidationException;
 import com.gamzabat.algohub.exception.StudyGroupValidationException;
+import com.gamzabat.algohub.repository.GroupMemberRepository;
 import com.gamzabat.algohub.repository.ProblemRepository;
 import com.gamzabat.algohub.repository.StudyGroupRepository;
 
@@ -24,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ProblemService {
 	private final ProblemRepository problemRepository;
 	private final StudyGroupRepository studyGroupRepository;
+	private final GroupMemberRepository groupMemberRepository;
 	public void createProblem(User user, CreateProblemRequest request) {
 		StudyGroup group = getGroup(request.groupId());
 
@@ -46,6 +51,18 @@ public class ProblemService {
 
 		problem.editDeadline(request.deadline());
 		log.info("success to edit problem deadline");
+	}
+
+	public List<GetProblemResponse> getProblemList(User user, Long groupId) {
+		StudyGroup group = getGroup(groupId);
+		if(!group.getOwner().getId().equals(user.getId())
+			&&!groupMemberRepository.existsByUserAndStudyGroup(user,group))
+			throw new ProblemValidationException(HttpStatus.FORBIDDEN.value(),"문제를 조회할 권한이 없습니다.");
+
+		List<Problem> problems = problemRepository.findAllByStudyGroup(group);
+		List<GetProblemResponse> list = problems.stream().map(GetProblemResponse::toDTO).toList();
+		log.info("success to get problem list");
+		return list;
 	}
 
 	private StudyGroup getGroup(Long id) {
