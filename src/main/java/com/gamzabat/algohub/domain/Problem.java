@@ -36,4 +36,6 @@ public class Problem {
 		this.level = level;
 		this.studyGroup = studyGroup;
 	}
+
+	public void editDeadline(LocalDate deadline){this.deadline = deadline;}
 }
