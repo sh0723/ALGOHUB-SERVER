@@ -243,4 +243,55 @@ class ProblemServiceTest {
 			.hasFieldOrPropertyWithValue("code",HttpStatus.FORBIDDEN.value())
 			.hasFieldOrPropertyWithValue("error","문제를 조회할 권한이 없습니다.");
 	}
+
+	@Test
+	@DisplayName("문제 삭제 성공")
+	void deleteProblem(){
+		// given
+		when(problemRepository.findById(20L)).thenReturn(Optional.ofNullable(problem));
+		when(groupRepository.findById(10L)).thenReturn(Optional.ofNullable(group));
+		// when
+		problemService.deleteProblem(user,20L);
+		// then
+		verify(problemRepository,times(1)).delete(problem);
+	}
+
+	@Test
+	@DisplayName("문제 삭제 실패 : 존재하지 않는 문제")
+	void deleteProblemFailed_1(){
+		// given
+		when(problemRepository.findById(20L)).thenReturn(Optional.empty());
+		// when, then
+		assertThatThrownBy(() -> problemService.deleteProblem(user,20L))
+			.isInstanceOf(ProblemValidationException.class)
+			.hasFieldOrPropertyWithValue("code",HttpStatus.NOT_FOUND.value())
+			.hasFieldOrPropertyWithValue("error","존재하지 않는 문제 입니다.");
+	}
+
+	@Test
+	@DisplayName("문제 삭제 실패 : 존재하지 않는 그룹")
+	void deleteProblemFailed_2(){
+		// given
+		when(problemRepository.findById(20L)).thenReturn(Optional.ofNullable(problem));
+		when(groupRepository.findById(10L)).thenReturn(Optional.empty());
+		// when, then
+		assertThatThrownBy(() -> problemService.deleteProblem(user,20L))
+			.isInstanceOf(StudyGroupValidationException.class)
+			.hasFieldOrPropertyWithValue("code",HttpStatus.NOT_FOUND.value())
+			.hasFieldOrPropertyWithValue("error","존재하지 않는 그룹 입니다.");
+	}
+
+	@Test
+	@DisplayName("문제 삭제 실패 : 권한 없음")
+	void deleteProblemFailed_3(){
+		// given
+		when(problemRepository.findById(20L)).thenReturn(Optional.ofNullable(problem));
+		when(groupRepository.findById(10L)).thenReturn(Optional.ofNullable(group));
+		// when, then
+		assertThatThrownBy(() -> problemService.deleteProblem(user2,20L))
+			.isInstanceOf(StudyGroupValidationException.class)
+			.hasFieldOrPropertyWithValue("code",HttpStatus.FORBIDDEN.value())
+			.hasFieldOrPropertyWithValue("error","문제에 대한 권한이 없습니다. : delete");
+	}
+
 }
