@@ -35,4 +35,10 @@ public class CustomExceptionHandler {
 	protected ResponseEntity<Object> handler(UncorrectedPasswordException e){
 		return ResponseEntity.badRequest().body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), e.getErrors(), null));
 	}
+
+	@ExceptionHandler(SolutionValidationException.class)
+	protected ResponseEntity<Object> handler(SolutionValidationException e){
+		return ResponseEntity.badRequest().body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), e.getError(), null));
+	}
+
 }
