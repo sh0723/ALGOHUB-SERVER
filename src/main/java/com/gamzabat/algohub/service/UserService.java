@@ -1,6 +1,6 @@
 package com.gamzabat.algohub.service;
 
-import com.gamzabat.algohub.common.annotation.AuthedUser;
+
 import com.gamzabat.algohub.dto.*;
 import com.gamzabat.algohub.exception.UncorrectedPasswordException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -60,11 +60,11 @@ public class UserService {
 	}
 
 
-	public UserInfoResponse userInfo(@AuthedUser User user) {
+	public UserInfoResponse userInfo(User user) {
 		return new UserInfoResponse(user.getEmail(), user.getNickname(),user.getProfileImage());
 	}
 
-	public void userUpdate(@AuthedUser User user, UpdateUserRequest updateUserRequest, MultipartFile profileImage) {
+	public void userUpdate(User user, UpdateUserRequest updateUserRequest, MultipartFile profileImage) {
 
 		if (profileImage != null && !profileImage.isEmpty()) {
 			if (user.getProfileImage() != null && !user.getProfileImage().isEmpty()) {
@@ -80,12 +80,12 @@ public class UserService {
 		userRepository.save(user);
 	}
 
-	public void deleteUser(@AuthedUser User user, DeleteUserRequest deleteUserRequest) {
+	public void deleteUser( User user, DeleteUserRequest deleteUserRequest) {
 
 		if (!passwordEncoder.matches(deleteUserRequest.password(),user.getPassword()))
 		{
 			throw new UncorrectedPasswordException("비밀번호가 틀렸습니다.");
 		}
-		userRepository.deleteByEmail(user.getEmail());
+		userRepository.delete(user);
 	}
 }
