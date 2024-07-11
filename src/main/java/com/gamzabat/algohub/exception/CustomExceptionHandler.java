@@ -35,4 +35,9 @@ public class CustomExceptionHandler {
 	protected ResponseEntity<Object> handler(UncorrectedPasswordException e){
 		return ResponseEntity.badRequest().body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), e.getErrors(), null));
 	}
+
+	@ExceptionHandler(CannotFoundGroupException.class)
+	protected  ResponseEntity<Object> handler(CannotFoundGroupException e) {
+		return ResponseEntity.badRequest().body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), e.getErrors(), null));
+	}
 }

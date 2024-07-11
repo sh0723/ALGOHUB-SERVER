@@ -2,6 +2,8 @@ package com.gamzabat.algohub.controller;
 
 import java.util.List;
 
+import com.gamzabat.algohub.domain.GroupMember;
+import com.gamzabat.algohub.dto.GetGroupMemberResponse;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
@@ -50,7 +52,7 @@ public class StudyGroupController {
 		return ResponseEntity.ok().body("OK");
 	}
 
-	@GetMapping
+	@GetMapping(value = "list")
 	@Operation(summary = "그룹 목록 조회 API", description = "방장 여부 상관 없이 유저가 참여하고 있는 그룹 모두 조회")
 	public ResponseEntity<List<GetStudyGroupResponse>> getStudyGroupList(@AuthedUser User user){
 		List<GetStudyGroupResponse> response = studyGroupService.getStudyGroupList(user);
@@ -75,4 +77,12 @@ public class StudyGroupController {
 		return ResponseEntity.ok().body("OK");
 	}
 
+	@GetMapping(value = "member-list")
+	@Operation(summary = "그룹 회원 목록 조회")
+	public ResponseEntity<Object> getGroupInfo(@AuthedUser User user, @RequestParam Long groupId) {
+
+
+		List<GetGroupMemberResponse> members = studyGroupService.groupInfo(user,groupId);
+		return ResponseEntity.ok().body(members);
+	}
 }

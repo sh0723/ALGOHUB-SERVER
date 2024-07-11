@@ -1,8 +1,12 @@
 package com.gamzabat.algohub.service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
+import com.gamzabat.algohub.dto.GetGroupMemberResponse;
+import com.gamzabat.algohub.exception.CannotFoundGroupException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,6 +25,8 @@ import com.gamzabat.algohub.repository.StudyGroupRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import javax.swing.*;
 
 @Slf4j
 @Service
@@ -68,9 +74,9 @@ public class StudyGroupService {
 			groupRepository.delete(studyGroup);
 		}
 		else{ // member
-			GroupMember member = groupMemberRepository.findByUserAndStudyGroup(user, studyGroup)
-				.orElseThrow(() -> new GroupMemberValidationException(HttpStatus.BAD_REQUEST.value(),"이미 참여하지 않은 그룹 입니다."));
-			groupMemberRepository.delete(member);
+			/*GroupMember member = groupMemberRepository.findByUserAndStudyGroup(user, studyGroup)
+					.orElseThrow(() -> new GroupMemberValidationException(HttpStatus.BAD_REQUEST.value(),"이미 참여하지 않은 그룹 입니다."));
+			groupMemberRepository.delete(member);*/
 		}
 		log.info("success to delete(exit) study group");
 	}
@@ -97,5 +103,23 @@ public class StudyGroupService {
 			group.editGroupImage(imageUrl);
 		}
 		log.info("success to edit group info");
+	}
+
+	public List<GetGroupMemberResponse> groupInfo(User user, Long id) {
+		Optional<StudyGroup> group = groupRepository.findById(id);
+		if (group.isEmpty()) {
+			throw new CannotFoundGroupException("그룹을 찾을 수 없습니다.");
+		}
+		List<GroupMember> groupMembers = groupMemberRepository.findAllByStudyGroup(group.get());
+
+		List<GetGroupMemberResponse> responseList = new ArrayList<>();
+
+		for (GroupMember groupMember : groupMembers) {
+			String profileImage = groupMember.getUser().getProfileImage();
+			Long groupMemberId = groupMember.getUser().getId();
+			String nickname = groupMember.getUser().getNickname();
+			responseList.add(new GetGroupMemberResponse(nickname,profileImage,groupMemberId));
+		}
+		return responseList;
 	}
 }
