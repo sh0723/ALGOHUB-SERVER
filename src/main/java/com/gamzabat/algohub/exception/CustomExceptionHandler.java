@@ -25,8 +25,9 @@ public class CustomExceptionHandler {
 	protected ResponseEntity<Object> handler(GroupMemberValidationException e){
 		return ResponseEntity.status(e.getCode()).body(new ErrorResponse(e.getCode(), e.getError(), null));
 	}
-	@ExceptionHandler(ProblemValidationException.class)
-	protected ResponseEntity<Object> handler(ProblemValidationException e){
-		return ResponseEntity.status(e.getCode()).body(new ErrorResponse(e.getCode(), e.getError(), null));
+
+	@ExceptionHandler(UncorrectedPasswordException.class)
+	protected ResponseEntity<Object> handler(UncorrectedPasswordException e){
+		return ResponseEntity.badRequest().body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), e.getErrors(), null));
 	}
 }

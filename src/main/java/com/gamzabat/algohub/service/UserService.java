@@ -1,8 +1,8 @@
 package com.gamzabat.algohub.service;
 
+import com.gamzabat.algohub.common.annotation.AuthedUser;
 import com.gamzabat.algohub.dto.*;
 import com.gamzabat.algohub.exception.UncorrectedPasswordException;
-import org.hibernate.sql.Delete;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -19,8 +19,6 @@ import com.gamzabat.algohub.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -62,40 +60,32 @@ public class UserService {
 	}
 
 
-	public UserInfoResponse userInfo(String email) {
-		Optional<User> user = userRepository.findByEmail(email);
-		return new UserInfoResponse(user.get().getEmail(), user.get().getNickname(),user.get().getProfileImage());
+	public UserInfoResponse userInfo(@AuthedUser User user) {
+		return new UserInfoResponse(user.getEmail(), user.getNickname(),user.getProfileImage());
 	}
 
-	public void userUpdate(String email, UpdateRequest updateRequest, MultipartFile profileImage) {
-		Optional<User> userOptional = userRepository.findByEmail(email);
-		if (userOptional.isEmpty()) {
-			throw new UserValidationException("사용자를 찾을 수 없습니다.");
+	public void userUpdate(@AuthedUser User user, UpdateUserRequest updateUserRequest, MultipartFile profileImage) {
+
+		if (profileImage != null && !profileImage.isEmpty()) {
+			if (user.getProfileImage() != null && !user.getProfileImage().isEmpty()) {
+				imageService.deleteImage(user.getProfileImage());
+				String imageUrl = imageService.saveImage(profileImage);
+				user.editProfileImage(imageUrl);
+			}
+		}
+		if (updateUserRequest.getNickname() != null && !updateUserRequest.getNickname().isEmpty()) {
+			user.editNickname(updateUserRequest.getNickname());
 		}
 
-		User user = userOptional.get();
-
-		if (profileImage != null && !profileImage.isEmpty()){
-			String imageUrl = imageService.saveImage(profileImage);
-			user.editProfileImage(imageUrl);
-		}
-
-		if (updateRequest.getNickname() != null && !updateRequest.getNickname().isEmpty()) {
-			user.editNickname(updateRequest.getNickname());
-		}
+		userRepository.save(user);
 	}
 
-	public boolean deleteUser(String email, DeleteRequest deleteRequest) {
-		Optional<User> userOptional = userRepository.findByEmail(email);
-		if (userOptional.isEmpty()) {
-			throw new UserValidationException("사용자를 찾을 수 없습니다.");
-		}
+	public void deleteUser(@AuthedUser User user, DeleteUserRequest deleteUserRequest) {
 
-		if (!passwordEncoder.matches(deleteRequest.password(),userOptional.get().getPassword()))
+		if (!passwordEncoder.matches(deleteUserRequest.password(),user.getPassword()))
 		{
-			return false;
+			throw new UncorrectedPasswordException("비밀번호가 틀렸습니다.");
 		}
-		userRepository.deleteByEmail(email);
-		return true;
+		userRepository.deleteByEmail(user.getEmail());
 	}
 }
