@@ -3,6 +3,7 @@ package com.gamzabat.algohub.controller;
 import java.util.List;
 
 import com.gamzabat.algohub.domain.GroupMember;
+import com.gamzabat.algohub.dto.CheckSolvedProblemResponse;
 import com.gamzabat.algohub.dto.GetGroupMemberResponse;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -84,5 +85,18 @@ public class StudyGroupController {
 
 		List<GetGroupMemberResponse> members = studyGroupService.groupInfo(user,groupId);
 		return ResponseEntity.ok().body(members);
+	}
+
+	@GetMapping(value = "problem-solving")
+	@Operation(summary = "문제 별 회원 풀이 여부 조회")
+	public ResponseEntity<Object> getCheckingSolvedProblem(@AuthedUser User user, @RequestParam Long problemId) {
+		List<CheckSolvedProblemResponse> responseList = studyGroupService.checkSolvedProblem(user,problemId);
+		return ResponseEntity.ok().body(responseList);
+	}
+
+	@GetMapping(value = "group-code")
+	@Operation(summary = "그룹 초대 코드 조회")
+	public ResponseEntity<Object> getGroupCode(@AuthedUser User user, @RequestParam Long groupId) {
+		return ResponseEntity.ok().body(studyGroupService.getGroupCode(user,groupId));
 	}
 }
