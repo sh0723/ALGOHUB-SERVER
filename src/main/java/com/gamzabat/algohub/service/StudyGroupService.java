@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import com.gamzabat.algohub.dto.GetGroupMemberResponse;
 import com.gamzabat.algohub.exception.CannotFoundGroupException;
+import com.gamzabat.algohub.exception.UserValidationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -110,16 +111,23 @@ public class StudyGroupService {
 		if (group.isEmpty()) {
 			throw new CannotFoundGroupException("그룹을 찾을 수 없습니다.");
 		}
-		List<GroupMember> groupMembers = groupMemberRepository.findAllByStudyGroup(group.get());
 
-		List<GetGroupMemberResponse> responseList = new ArrayList<>();
+		if (groupMemberRepository.existsByUser(user) || group.get().getOwner() == user) {
+			List<GroupMember> groupMembers = groupMemberRepository.findAllByStudyGroup(group.get());
 
-		for (GroupMember groupMember : groupMembers) {
-			String profileImage = groupMember.getUser().getProfileImage();
-			Long groupMemberId = groupMember.getUser().getId();
-			String nickname = groupMember.getUser().getNickname();
-			responseList.add(new GetGroupMemberResponse(nickname,profileImage,groupMemberId));
+
+			List<GetGroupMemberResponse> responseList = new ArrayList<>();
+
+			for (GroupMember groupMember : groupMembers) {
+				String profileImage = groupMember.getUser().getProfileImage();
+				Long groupMemberId = groupMember.getUser().getId();
+				String nickname = groupMember.getUser().getNickname();
+				responseList.add(new GetGroupMemberResponse(nickname, profileImage, groupMemberId));
+			}
+			return responseList;
 		}
-		return responseList;
+		else {
+			throw new UserValidationException("그룹 내용을 확인할 권한이 없습니다");
+		}
 	}
 }
