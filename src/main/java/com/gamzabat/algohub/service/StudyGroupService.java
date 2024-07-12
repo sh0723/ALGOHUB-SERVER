@@ -75,9 +75,9 @@ public class StudyGroupService {
 			groupRepository.delete(studyGroup);
 		}
 		else{ // member
-			/*GroupMember member = groupMemberRepository.findByUserAndStudyGroup(user, studyGroup)
+			GroupMember member = groupMemberRepository.findByUserAndStudyGroup(user, studyGroup)
 					.orElseThrow(() -> new GroupMemberValidationException(HttpStatus.BAD_REQUEST.value(),"이미 참여하지 않은 그룹 입니다."));
-			groupMemberRepository.delete(member);*/
+			groupMemberRepository.delete(member);
 		}
 		log.info("success to delete(exit) study group");
 	}
