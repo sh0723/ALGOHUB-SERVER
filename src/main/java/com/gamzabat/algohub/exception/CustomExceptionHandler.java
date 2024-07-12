@@ -36,6 +36,16 @@ public class CustomExceptionHandler {
 		return ResponseEntity.badRequest().body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), e.getErrors(), null));
 	}
 
+	@ExceptionHandler(SolutionValidationException.class)
+	protected ResponseEntity<Object> handler(SolutionValidationException e){
+		return ResponseEntity.badRequest().body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), e.getError(), null));
+	}
+
+	@ExceptionHandler(CommentValidationException.class)
+	protected ResponseEntity<Object> handler(CommentValidationException e){
+		return ResponseEntity.status(e.getCode()).body(new ErrorResponse(e.getCode(), e.getError(), null));
+	}
+
 	@ExceptionHandler(CannotFoundGroupException.class)
 	protected  ResponseEntity<Object> handler(CannotFoundGroupException e) {
 		return ResponseEntity.badRequest().body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), e.getErrors(), null));
