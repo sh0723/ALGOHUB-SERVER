@@ -5,17 +5,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.gamzabat.algohub.domain.*;
+import com.gamzabat.algohub.dto.CheckSolvedProblemResponse;
 import com.gamzabat.algohub.dto.GetGroupMemberResponse;
 import com.gamzabat.algohub.exception.CannotFoundGroupException;
 import com.gamzabat.algohub.exception.UserValidationException;
+import com.gamzabat.algohub.repository.ProblemRepository;
+import com.gamzabat.algohub.repository.SolutionRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
-import com.gamzabat.algohub.domain.GroupMember;
-import com.gamzabat.algohub.domain.StudyGroup;
-import com.gamzabat.algohub.domain.User;
 import com.gamzabat.algohub.dto.EditGroupRequest;
 import com.gamzabat.algohub.dto.GetStudyGroupResponse;
 import com.gamzabat.algohub.exception.GroupMemberValidationException;
@@ -37,6 +38,9 @@ public class StudyGroupService {
 	private final StudyGroupRepository groupRepository;
 	private final GroupMemberRepository groupMemberRepository;
 	private final ImageService imageService;
+	private final SolutionRepository solutionRepository;
+	private final ProblemRepository problemRepository;
+	private final StudyGroupRepository studyGroupRepository;
 
 	public void createGroup(User user, String name, MultipartFile profileImage) {
 		String imageUrl = imageService.saveImage(profileImage);
@@ -112,7 +116,7 @@ public class StudyGroupService {
 			throw new CannotFoundGroupException("그룹을 찾을 수 없습니다.");
 		}
 
-		if (groupMemberRepository.existsByUser(user) || group.get().getOwner() == user) {
+		if (groupMemberRepository.existsByUser(user) || group.get().getOwner().getId().equals(user.getId())) {
 			List<GroupMember> groupMembers = groupMemberRepository.findAllByStudyGroup(group.get());
 
 
@@ -129,5 +133,57 @@ public class StudyGroupService {
 		else {
 			throw new UserValidationException("그룹 내용을 확인할 권한이 없습니다");
 		}
+	}
+
+	public List<CheckSolvedProblemResponse> checkSolvedProblem(User user, Long problemId) {
+		Problem problem = problemRepository.getById(problemId);
+		StudyGroup studyGroup = problem.getStudyGroup();
+
+		if (studyGroup == null) {
+			throw new UserValidationException("그룹을 찾을 수 없습니다.");
+		}
+		if (problem == null) {
+			throw new UserValidationException("문제를 찾을 수 없습니다.");
+		}
+
+		if (groupMemberRepository.existsByUser(user) || studyGroup.getOwner().getId().equals(user.getId())) {
+			List<GroupMember> groupMembers = groupMemberRepository.findAllByStudyGroup(studyGroup);
+
+			List<CheckSolvedProblemResponse> responseList = new ArrayList<>();
+
+			for (GroupMember groupMember : groupMembers) {
+				String profileImage = groupMember.getUser().getProfileImage();
+				Long groupMemberId = groupMember.getUser().getId();
+				String nickname = groupMember.getUser().getNickname();
+
+				Boolean solved;
+				if (solutionRepository.findByUserAndProblem(groupMember.getUser(), problem) == null)
+					solved = false;
+				else
+					solved = true;
+
+
+				responseList.add(new CheckSolvedProblemResponse(groupMemberId, profileImage, nickname, solved));
+			}
+
+			return responseList;
+		}
+		else {
+			throw new UserValidationException("풀이 여부 목록을 확인할 권한이 없습니다.");
+		}
+	}
+
+	public String getGroupCode(User user, Long groupId) {
+		Optional<StudyGroup> studyGroup = studyGroupRepository.findById(groupId);
+
+		if (studyGroup.isEmpty())
+		{
+			throw new UserValidationException("그룹을 찾지 못했습니다.");
+		}
+
+		if (studyGroup.get().getOwner().getId().equals(user.getId()))
+			return studyGroup.get().getGroupCode();
+		else
+			throw new UserValidationException("코드를 조회할 권한이 없습니다.");
 	}
 }

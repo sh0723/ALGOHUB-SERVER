@@ -10,4 +10,5 @@ import com.gamzabat.algohub.domain.User;
 
 public interface SolutionRepository extends JpaRepository<Solution,Long> {
 	List<Solution> findAllByUserAndProblem(User user, Problem problem);
+	Solution findByUserAndProblem(User user, Problem problem);
 }

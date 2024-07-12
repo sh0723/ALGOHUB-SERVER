@@ -9,4 +9,5 @@ import com.gamzabat.algohub.domain.StudyGroup;
 
 public interface ProblemRepository extends JpaRepository<Problem, Long> {
 	List<Problem> findAllByStudyGroup(StudyGroup studyGroup);
+	Problem getById(Long id);
 }
