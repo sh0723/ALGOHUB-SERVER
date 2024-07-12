@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +25,7 @@ import com.gamzabat.algohub.domain.Solution;
 import com.gamzabat.algohub.domain.StudyGroup;
 import com.gamzabat.algohub.domain.User;
 import com.gamzabat.algohub.dto.CreateCommentRequest;
+import com.gamzabat.algohub.dto.GetCommentResponse;
 import com.gamzabat.algohub.enums.Role;
 import com.gamzabat.algohub.exception.GroupMemberValidationException;
 import com.gamzabat.algohub.exception.ProblemValidationException;
@@ -170,6 +173,100 @@ class CommentServiceTest {
 		when(groupMemberRepository.existsByUserAndStudyGroup(user2,studyGroup)).thenReturn(false);
 		// when, then
 		assertThatThrownBy(() -> commentService.createComment(user2,request))
+			.isInstanceOf(GroupMemberValidationException.class)
+			.hasFieldOrPropertyWithValue("code", HttpStatus.FORBIDDEN.value())
+			.hasFieldOrPropertyWithValue("error","참여하지 않은 그룹 입니다.");
+	}
+
+	@Test
+	@DisplayName("댓글 조회 성공 (주인)")
+	void getCommentList_1() {
+		// given
+		List<Comment> list = new ArrayList<>(30);
+		for(int i=0; i<30; i++)
+			list.add(Comment.builder().solution(solution).user(user).content("content"+i).build());
+		when(solutionRepository.findById(10L)).thenReturn(Optional.ofNullable(solution));
+		when(problemRepository.findById(20L)).thenReturn(Optional.ofNullable(problem));
+		when(studyGroupRepository.findById(30L)).thenReturn(Optional.ofNullable(studyGroup));
+		when(commentRepository.findAllBySolution(solution)).thenReturn(list);
+		// when
+		List<GetCommentResponse> result = commentService.getCommentList(user, 10L);
+		// then
+		assertThat(result.size()).isEqualTo(30);
+		for(int i=0; i<30; i++)
+			assertThat(result.get(i).content()).isEqualTo("content"+i);
+	}
+
+	@Test
+	@DisplayName("댓글 조회 성공 (멤버)")
+	void getComment_2() {
+		// given
+		List<Comment> list = new ArrayList<>(30);
+		for(int i=0; i<30; i++)
+			list.add(Comment.builder().solution(solution).user(user).content("content"+i).build());
+		when(solutionRepository.findById(10L)).thenReturn(Optional.ofNullable(solution));
+		when(problemRepository.findById(20L)).thenReturn(Optional.ofNullable(problem));
+		when(studyGroupRepository.findById(30L)).thenReturn(Optional.ofNullable(studyGroup));
+		when(groupMemberRepository.existsByUserAndStudyGroup(user2,studyGroup)).thenReturn(true);
+		when(commentRepository.findAllBySolution(solution)).thenReturn(list);
+		// when
+		List<GetCommentResponse> result = commentService.getCommentList(user2, 10L);
+		// then
+		assertThat(result.size()).isEqualTo(30);
+		for(int i=0; i<30; i++)
+			assertThat(result.get(i).content()).isEqualTo("content"+i);
+	}
+
+	@Test
+	@DisplayName("댓글 조회 실패 : 존재하지 않는 풀이")
+	void getCommentListFailed_1(){
+		// given
+		when(solutionRepository.findById(10L)).thenReturn(Optional.empty());
+		// when, then
+		assertThatThrownBy(() -> commentService.getCommentList(user,10L))
+			.isInstanceOf(SolutionValidationException.class)
+			.hasFieldOrPropertyWithValue("error","존재하지 않는 풀이 입니다.");
+	}
+
+	@Test
+	@DisplayName("댓글 조회 실패 : 존재하지 않는 문제")
+	void getCommentListFailed_2(){
+		// given
+		when(solutionRepository.findById(10L)).thenReturn(Optional.ofNullable(solution));
+		when(problemRepository.findById(20L)).thenReturn(Optional.empty());
+		// when, then
+		assertThatThrownBy(() -> commentService.getCommentList(user,10L))
+			.isInstanceOf(ProblemValidationException.class)
+			.hasFieldOrPropertyWithValue("code", HttpStatus.NOT_FOUND.value())
+			.hasFieldOrPropertyWithValue("error","존재하지 않는 문제 입니다.");
+	}
+
+	@Test
+	@DisplayName("댓글 조회 실패 : 존재하지 않는 그룹")
+	void getCommentListFailed_3(){
+		// given
+		CreateCommentRequest request = CreateCommentRequest.builder().solutionId(10L).content("content").build();
+		when(solutionRepository.findById(10L)).thenReturn(Optional.ofNullable(solution));
+		when(problemRepository.findById(20L)).thenReturn(Optional.ofNullable(problem));
+		when(studyGroupRepository.findById(30L)).thenReturn(Optional.empty());
+		// when, then
+		assertThatThrownBy(() -> commentService.getCommentList(user,10L))
+			.isInstanceOf(StudyGroupValidationException.class)
+			.hasFieldOrPropertyWithValue("code", HttpStatus.NOT_FOUND.value())
+			.hasFieldOrPropertyWithValue("error","존재하지 않는 그룹 입니다.");
+	}
+
+	@Test
+	@DisplayName("댓글 조회 실패 : 참여하지 않은 그룹")
+	void getCommentListFailed_4(){
+		// given
+		CreateCommentRequest request = CreateCommentRequest.builder().solutionId(10L).content("content").build();
+		when(solutionRepository.findById(10L)).thenReturn(Optional.ofNullable(solution));
+		when(problemRepository.findById(20L)).thenReturn(Optional.ofNullable(problem));
+		when(studyGroupRepository.findById(30L)).thenReturn(Optional.ofNullable(studyGroup));
+		when(groupMemberRepository.existsByUserAndStudyGroup(user2,studyGroup)).thenReturn(false);
+		// when, then
+		assertThatThrownBy(() -> commentService.getCommentList(user2,10L))
 			.isInstanceOf(GroupMemberValidationException.class)
 			.hasFieldOrPropertyWithValue("code", HttpStatus.FORBIDDEN.value())
 			.hasFieldOrPropertyWithValue("error","참여하지 않은 그룹 입니다.");
