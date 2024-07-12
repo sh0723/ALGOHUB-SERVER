@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.gamzabat.algohub.domain.Problem;
 import com.gamzabat.algohub.domain.Solution;
 import com.gamzabat.algohub.domain.User;
+import com.gamzabat.algohub.dto.CreateSolutionRequest;
 import com.gamzabat.algohub.dto.GetSolutionResponse;
 import com.gamzabat.algohub.exception.ProblemValidationException;
 import com.gamzabat.algohub.exception.UserValidationException;
@@ -35,5 +36,10 @@ public class SolutionService {
 		List<Solution> solutions = solutionRepository.findAllByUserAndProblem(user, problem);
 		log.info("success to get solution list");
 		return solutions.stream().map(GetSolutionResponse::toDTO).toList();
+	}
+
+	public void test(CreateSolutionRequest request) {
+		log.info("username:"+request.username());
+		log.info("code:"+request.code());
 	}
 }
