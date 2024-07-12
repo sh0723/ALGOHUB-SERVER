@@ -41,4 +41,9 @@ public class CustomExceptionHandler {
 		return ResponseEntity.badRequest().body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), e.getError(), null));
 	}
 
+	@ExceptionHandler(CommentValidationException.class)
+	protected ResponseEntity<Object> handler(CommentValidationException e){
+		return ResponseEntity.status(e.getCode()).body(new ErrorResponse(e.getCode(), e.getError(), null));
+	}
+
 }

@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -12,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.gamzabat.algohub.common.annotation.AuthedUser;
-import com.gamzabat.algohub.domain.Solution;
 import com.gamzabat.algohub.domain.User;
 import com.gamzabat.algohub.dto.CreateCommentRequest;
 import com.gamzabat.algohub.dto.GetCommentResponse;
@@ -46,5 +46,12 @@ public class CommentController {
 	public ResponseEntity<List<GetCommentResponse>> getCommentList(@AuthedUser User user, @RequestParam Long solutionId){
 		List<GetCommentResponse> response = commentService.getCommentList(user,solutionId);
 		return ResponseEntity.ok().body(response);
+	}
+
+	@DeleteMapping
+	@Operation(summary = "댓글 삭제 API")
+	public ResponseEntity<Object> deleteComment(@AuthedUser User user, @RequestParam Long commentId){
+		commentService.deleteComment(user,commentId);
+		return ResponseEntity.ok().body("OK");
 	}
 }

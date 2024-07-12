@@ -13,6 +13,7 @@ import com.gamzabat.algohub.domain.StudyGroup;
 import com.gamzabat.algohub.domain.User;
 import com.gamzabat.algohub.dto.CreateCommentRequest;
 import com.gamzabat.algohub.dto.GetCommentResponse;
+import com.gamzabat.algohub.exception.CommentValidationException;
 import com.gamzabat.algohub.exception.GroupMemberValidationException;
 import com.gamzabat.algohub.exception.ProblemValidationException;
 import com.gamzabat.algohub.exception.SolutionValidationException;
@@ -55,6 +56,17 @@ public class CommentService {
 		List<GetCommentResponse> result = list.stream().map(GetCommentResponse::toDTO).toList();
 		log.info("success to get comment list");
 		return result;
+	}
+
+	public void deleteComment(User user, Long commentId) {
+		Comment comment = commentRepository.findById(commentId)
+			.orElseThrow(() -> new CommentValidationException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 댓글 입니다."));
+		if(!comment.getUser().getId().equals(user.getId()))
+			throw new CommentValidationException(HttpStatus.FORBIDDEN.value(),"댓글 삭제에 대한 권한이 없습니다.");
+
+		checkSolutionValidation(user, comment.getSolution().getId());
+		commentRepository.delete(comment);
+		log.info("success to delete comment");
 	}
 
 	private Solution checkSolutionValidation(User user, Long solutionId) {
