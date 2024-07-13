@@ -1,5 +1,10 @@
 package com.gamzabat.algohub.exception;
 
+import com.gamzabat.algohub.feature.comment.exception.CommentValidationException;
+import com.gamzabat.algohub.feature.comment.exception.SolutionValidationException;
+import com.gamzabat.algohub.feature.studygroup.exception.CannotFoundGroupException;
+import com.gamzabat.algohub.feature.studygroup.exception.GroupMemberValidationException;
+import com.gamzabat.algohub.feature.user.exception.UncorrectedPasswordException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;

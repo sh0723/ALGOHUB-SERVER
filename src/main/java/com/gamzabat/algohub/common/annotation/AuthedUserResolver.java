@@ -8,9 +8,9 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 import com.gamzabat.algohub.common.jwt.TokenProvider;
-import com.gamzabat.algohub.domain.User;
+import com.gamzabat.algohub.feature.user.domain.User;
 import com.gamzabat.algohub.exception.UserValidationException;
-import com.gamzabat.algohub.repository.UserRepository;
+import com.gamzabat.algohub.feature.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 

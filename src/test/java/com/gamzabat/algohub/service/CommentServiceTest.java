@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.gamzabat.algohub.feature.comment.service.CommentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,24 +20,24 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
-import com.gamzabat.algohub.domain.Comment;
-import com.gamzabat.algohub.domain.Problem;
-import com.gamzabat.algohub.domain.Solution;
-import com.gamzabat.algohub.domain.StudyGroup;
-import com.gamzabat.algohub.domain.User;
-import com.gamzabat.algohub.dto.CreateCommentRequest;
-import com.gamzabat.algohub.dto.GetCommentResponse;
+import com.gamzabat.algohub.feature.comment.domain.Comment;
+import com.gamzabat.algohub.feature.problem.domain.Problem;
+import com.gamzabat.algohub.feature.solution.domain.Solution;
+import com.gamzabat.algohub.feature.studygroup.domain.StudyGroup;
+import com.gamzabat.algohub.feature.user.domain.User;
+import com.gamzabat.algohub.feature.comment.dto.CreateCommentRequest;
+import com.gamzabat.algohub.feature.comment.dto.GetCommentResponse;
 import com.gamzabat.algohub.enums.Role;
-import com.gamzabat.algohub.exception.CommentValidationException;
-import com.gamzabat.algohub.exception.GroupMemberValidationException;
+import com.gamzabat.algohub.feature.comment.exception.CommentValidationException;
+import com.gamzabat.algohub.feature.studygroup.exception.GroupMemberValidationException;
 import com.gamzabat.algohub.exception.ProblemValidationException;
-import com.gamzabat.algohub.exception.SolutionValidationException;
+import com.gamzabat.algohub.feature.comment.exception.SolutionValidationException;
 import com.gamzabat.algohub.exception.StudyGroupValidationException;
-import com.gamzabat.algohub.repository.CommentRepository;
-import com.gamzabat.algohub.repository.GroupMemberRepository;
-import com.gamzabat.algohub.repository.ProblemRepository;
-import com.gamzabat.algohub.repository.SolutionRepository;
-import com.gamzabat.algohub.repository.StudyGroupRepository;
+import com.gamzabat.algohub.feature.comment.repository.CommentRepository;
+import com.gamzabat.algohub.feature.studygroup.repository.GroupMemberRepository;
+import com.gamzabat.algohub.feature.problem.repository.ProblemRepository;
+import com.gamzabat.algohub.feature.solution.repository.SolutionRepository;
+import com.gamzabat.algohub.feature.studygroup.repository.StudyGroupRepository;
 
 @ExtendWith(MockitoExtension.class)
 class CommentServiceTest {

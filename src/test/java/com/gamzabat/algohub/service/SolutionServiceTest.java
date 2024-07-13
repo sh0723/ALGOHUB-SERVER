@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.gamzabat.algohub.feature.solution.service.SolutionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,16 +19,16 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
-import com.gamzabat.algohub.domain.Problem;
-import com.gamzabat.algohub.domain.Solution;
-import com.gamzabat.algohub.domain.User;
-import com.gamzabat.algohub.dto.GetSolutionResponse;
+import com.gamzabat.algohub.feature.problem.domain.Problem;
+import com.gamzabat.algohub.feature.solution.domain.Solution;
+import com.gamzabat.algohub.feature.user.domain.User;
+import com.gamzabat.algohub.feature.solution.dto.GetSolutionResponse;
 import com.gamzabat.algohub.enums.Role;
 import com.gamzabat.algohub.exception.ProblemValidationException;
 import com.gamzabat.algohub.exception.UserValidationException;
-import com.gamzabat.algohub.repository.ProblemRepository;
-import com.gamzabat.algohub.repository.SolutionRepository;
-import com.gamzabat.algohub.repository.UserRepository;
+import com.gamzabat.algohub.feature.problem.repository.ProblemRepository;
+import com.gamzabat.algohub.feature.solution.repository.SolutionRepository;
+import com.gamzabat.algohub.feature.user.repository.UserRepository;
 
 @ExtendWith(MockitoExtension.class)
 class SolutionServiceTest {

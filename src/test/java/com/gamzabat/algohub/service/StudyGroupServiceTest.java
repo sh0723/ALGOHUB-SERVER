@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.gamzabat.algohub.feature.image.service.ImageService;
+import com.gamzabat.algohub.feature.studygroup.service.StudyGroupService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,16 +23,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockMultipartFile;
 
-import com.gamzabat.algohub.domain.GroupMember;
-import com.gamzabat.algohub.domain.StudyGroup;
-import com.gamzabat.algohub.domain.User;
-import com.gamzabat.algohub.dto.EditGroupRequest;
-import com.gamzabat.algohub.dto.GetStudyGroupResponse;
+import com.gamzabat.algohub.feature.studygroup.domain.GroupMember;
+import com.gamzabat.algohub.feature.studygroup.domain.StudyGroup;
+import com.gamzabat.algohub.feature.user.domain.User;
+import com.gamzabat.algohub.feature.studygroup.dto.EditGroupRequest;
+import com.gamzabat.algohub.feature.studygroup.dto.GetStudyGroupResponse;
 import com.gamzabat.algohub.enums.Role;
-import com.gamzabat.algohub.exception.GroupMemberValidationException;
+import com.gamzabat.algohub.feature.studygroup.exception.GroupMemberValidationException;
 import com.gamzabat.algohub.exception.StudyGroupValidationException;
-import com.gamzabat.algohub.repository.GroupMemberRepository;
-import com.gamzabat.algohub.repository.StudyGroupRepository;
+import com.gamzabat.algohub.feature.studygroup.repository.GroupMemberRepository;
+import com.gamzabat.algohub.feature.studygroup.repository.StudyGroupRepository;
 
 @ExtendWith(MockitoExtension.class)
 class StudyGroupServiceTest {
