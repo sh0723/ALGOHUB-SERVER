@@ -67,7 +67,7 @@ public class UserController {
 
 	@DeleteMapping()
 	@Operation(summary = "회원정보삭제 API")
-	public ResponseEntity<Object> deleteUser(@AuthedUser User user, @Valid @RequestBody DeleteUserRequest request, Errors errors){
+	public ResponseEntity<Object> deleteUser(@AuthedUser User user, @Valid @RequestPart DeleteUserRequest request, Errors errors){
 		if (errors.hasErrors()) {
 			throw new RequestException("올바르지 않은 요청입니다.",errors);
 		}

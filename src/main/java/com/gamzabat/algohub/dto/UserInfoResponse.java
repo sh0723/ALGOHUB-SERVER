@@ -9,9 +9,12 @@ import lombok.Data;
 @Builder
 @AllArgsConstructor
 public class UserInfoResponse {
+    @JsonProperty("email")
     private String email;
 
+    @JsonProperty("nickname")
     private String nickname;
 
+    @JsonProperty("profile_image")
     private String profileImage;
 }
