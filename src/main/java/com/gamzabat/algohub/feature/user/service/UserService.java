@@ -79,6 +79,9 @@ public class UserService {
 		if (updateUserRequest.getNickname() != null && !updateUserRequest.getNickname().isEmpty()) {
 			user.editNickname(updateUserRequest.getNickname());
 		}
+		if (updateUserRequest.getBjNickname() != null && !updateUserRequest.getBjNickname().isEmpty()) {
+			user.editBjNickname(updateUserRequest.getBjNickname());
+		}
 
 		userRepository.save(user);
 	}

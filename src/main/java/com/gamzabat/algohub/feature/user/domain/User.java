@@ -47,7 +47,9 @@ public class User {
 	public void editNickname(String nickname){
 		this.nickname = nickname;
 	}
-
+	public void editBjNickname(String bjNickname){
+		this.bjNickname = bjNickname;
+	}
 	public void editProfileImage(String profileImage){
 		this.profileImage = profileImage;
 	}
