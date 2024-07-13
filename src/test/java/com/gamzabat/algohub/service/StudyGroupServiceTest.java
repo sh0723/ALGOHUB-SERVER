@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.gamzabat.algohub.feature.image.service.ImageService;
+import com.gamzabat.algohub.feature.studygroup.dto.CreateGroupRequest;
 import com.gamzabat.algohub.feature.studygroup.service.StudyGroupService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -58,7 +59,7 @@ class StudyGroupServiceTest {
 			.role(Role.USER).profileImage("image").build();
 		user2 = User.builder().email("email2").password("password").nickname("nickname")
 			.role(Role.USER).profileImage("image").build();
-		group = StudyGroup.builder().name("name").owner(user).groupImage("imageUrl").groupCode("code").build();
+		group = StudyGroup.builder().name("name").owner(user).startDate(LocalDate.now()).endDate(LocalDate.now().plusDays(1)).groupImage("imageUrl").groupCode("code").build();
 
 		Field userField = User.class.getDeclaredField("id");
 		userField.setAccessible(true);
@@ -77,14 +78,18 @@ class StudyGroupServiceTest {
 		String name = "name";
 		String imageUrl = "groupImage";
 		MockMultipartFile profileImage = new MockMultipartFile("image",new byte[]{1,2,3});
+		CreateGroupRequest request = new CreateGroupRequest(name,LocalDate.now(),LocalDate.now().plusDays(5),"introduction");
 		when(imageService.saveImage(profileImage)).thenReturn(imageUrl);
 		// when
-		studyGroupService.createGroup(user,name,profileImage);
+		studyGroupService.createGroup(user,request,profileImage);
 		// then
 		verify(studyGroupRepository,times(1)).save(groupCaptor.capture());
 		StudyGroup result = groupCaptor.getValue();
 		assertThat(result.getName()).isEqualTo(name);
 		assertThat(result.getOwner()).isEqualTo(user);
+		assertThat(result.getStartDate()).isEqualTo(LocalDate.now());
+		assertThat(result.getEndDate()).isEqualTo(LocalDate.now().plusDays(5));
+		assertThat(result.getIntroduction()).isEqualTo("introduction");
 		assertThat(result.getGroupImage()).isEqualTo(imageUrl);
 	}
 
@@ -193,6 +198,9 @@ class StudyGroupServiceTest {
 				.name("name"+i)
 				.owner(user)
 				.groupImage("imageUrl"+i)
+					.startDate(LocalDate.now())
+					.endDate(LocalDate.now().plusDays(i))
+					.introduction("introduction"+i)
 				.groupCode("code"+i)
 				.build());
 		}
@@ -205,6 +213,9 @@ class StudyGroupServiceTest {
 			assertThat(result.get(i).name()).isEqualTo("name"+i);
 			assertThat(result.get(i).ownerNickname()).isEqualTo("nickname");
 			assertThat(result.get(i).groupImage()).isEqualTo("imageUrl"+i);
+			assertThat(result.get(i).startDate()).isEqualTo(LocalDate.now());
+			assertThat(result.get(i).endDate()).isEqualTo(LocalDate.now().plusDays(i));
+			assertThat(result.get(i).introduction()).isEqualTo("introduction"+i);
 			assertThat(result.get(i).isOwner()).isTrue();
 		}
 	}
@@ -213,7 +224,7 @@ class StudyGroupServiceTest {
 	@DisplayName("그룹 정보 수정 성공")
 	void editGroup(){
 		// given
-		EditGroupRequest request = new EditGroupRequest(10L,"editName");
+		EditGroupRequest request = new EditGroupRequest(10L,"editName",LocalDate.now().plusDays(10),LocalDate.now().plusDays(10),"editIntroduction");
 		MockMultipartFile editImage = new MockMultipartFile("editImage",new byte[]{1,2,3});
 		when(imageService.saveImage(editImage)).thenReturn("editImage");
 		when(studyGroupRepository.findById(anyLong())).thenReturn(Optional.ofNullable(group));
@@ -222,13 +233,16 @@ class StudyGroupServiceTest {
 		// then
 		assertThat(group.getName()).isEqualTo("editName");
 		assertThat(group.getGroupImage()).isEqualTo("editImage");
+		assertThat(group.getStartDate()).isEqualTo(LocalDate.now().plusDays(10));
+		assertThat(group.getEndDate()).isEqualTo(LocalDate.now().plusDays(10));
+		assertThat(group.getIntroduction()).isEqualTo("editIntroduction");
 	}
 
 	@Test
 	@DisplayName("그룹 정보 수정 실패 : 존재하지 않는 그룹")
 	void editGroupFailed_1(){
 		// given
-		EditGroupRequest request = new EditGroupRequest(10L,"editName");
+		EditGroupRequest request = new EditGroupRequest(10L,"editName",LocalDate.now().plusDays(10),LocalDate.now().plusDays(10),"editIntroduction");
 		MockMultipartFile editImage = new MockMultipartFile("editImage",new byte[]{1,2,3});
 		when(studyGroupRepository.findById(10L)).thenReturn(Optional.empty());
 		// when, then
@@ -242,7 +256,7 @@ class StudyGroupServiceTest {
 	@DisplayName("그룹 정보 수정 실패 : 권한 없음")
 	void editGroupFailed_2(){
 		// given
-		EditGroupRequest request = new EditGroupRequest(10L,"editName");
+		EditGroupRequest request = new EditGroupRequest(10L,"editName",LocalDate.now().plusDays(10),LocalDate.now().plusDays(10),"editIntroduction");
 		MockMultipartFile editImage = new MockMultipartFile("editImage",new byte[]{1,2,3});
 		when(studyGroupRepository.findById(10L)).thenReturn(Optional.ofNullable(group));
 		// when, then
