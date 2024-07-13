@@ -31,17 +31,23 @@ public class Solution {
 
 	private LocalDate solvedDate;
 	private String content;
+	private boolean isCorrect;
 	private Integer memoryUsage;
 	private Integer executionTime;
+	private String language;
+	private Integer codeLength;
 
 	@Builder
-	public Solution(Problem problem, User user, LocalDate solvedDate, String content, Integer memoryUsage,
-		Integer executionTime) {
+	public Solution(Problem problem, User user, LocalDate solvedDate, String content, boolean isCorrect,
+		Integer memoryUsage, Integer executionTime, String language, Integer codeLength) {
 		this.problem = problem;
 		this.user = user;
 		this.solvedDate = solvedDate;
 		this.content = content;
+		this.isCorrect = isCorrect;
 		this.memoryUsage = memoryUsage;
 		this.executionTime = executionTime;
+		this.language = language;
+		this.codeLength = codeLength;
 	}
 }

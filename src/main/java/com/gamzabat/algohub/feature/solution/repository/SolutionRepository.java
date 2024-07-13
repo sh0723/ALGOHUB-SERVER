@@ -9,6 +9,6 @@ import com.gamzabat.algohub.feature.solution.domain.Solution;
 import com.gamzabat.algohub.feature.user.domain.User;
 
 public interface SolutionRepository extends JpaRepository<Solution,Long> {
-	List<Solution> findAllByUserAndProblem(User user, Problem problem);
+	List<Solution> findAllByProblem(Problem problem);
 	Boolean existsByUserAndProblem(User user, Problem problem);
 }
