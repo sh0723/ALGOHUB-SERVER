@@ -113,13 +113,12 @@ public class StudyGroupService {
 	}
 
 	public List<GetGroupMemberResponse> groupInfo(User user, Long id) {
-		Optional<StudyGroup> group = groupRepository.findById(id);
-		if (group.isEmpty()) {
-			throw new CannotFoundGroupException("그룹을 찾을 수 없습니다.");
-		}
+		StudyGroup group = groupRepository.findById(id)
+				.orElseThrow(() -> new CannotFoundGroupException("그룹을 찾을 수 없습니다."));
 
-		if (groupMemberRepository.existsByUserAndStudyGroup(user, group.get()) || group.get().getOwner().getId().equals(user.getId())) {
-			List<GroupMember> groupMembers = groupMemberRepository.findAllByStudyGroup(group.get());
+
+		if (groupMemberRepository.existsByUserAndStudyGroup(user, group) || group.getOwner().getId().equals(user.getId())) {
+			List<GroupMember> groupMembers = groupMemberRepository.findAllByStudyGroup(group);
 
 
 			List<GetGroupMemberResponse> responseList = new ArrayList<>();
@@ -138,15 +137,9 @@ public class StudyGroupService {
 	}
 
 	public List<CheckSolvedProblemResponse> getChekingSolvedProblem(User user, Long problemId) {
-		Problem problem = problemRepository.getById(problemId);
+		Problem problem = problemRepository.findById(problemId)
+				.orElseThrow(() -> new CannotFoundProblemException("문제를 찾을 수 없습니다."));
 		StudyGroup studyGroup = problem.getStudyGroup();
-
-		if (studyGroup == null) {
-			throw new CannotFoundGroupException("그룹을 찾을 수 없습니다.");
-		}
-		if (problem == null) {
-			throw new CannotFoundProblemException("문제를 찾을 수 없습니다.");
-		}
 
 		if (groupMemberRepository.existsByUserAndStudyGroup(user,studyGroup) || studyGroup.getOwner().getId().equals(user.getId())) {
 			List<GroupMember> groupMembers = groupMemberRepository.findAllByStudyGroup(studyGroup);
@@ -176,15 +169,11 @@ public class StudyGroupService {
 	}
 
 	public String getGroupCode(User user, Long groupId) {
-		Optional<StudyGroup> studyGroup = studyGroupRepository.findById(groupId);
+		StudyGroup studyGroup = studyGroupRepository.findById(groupId)
+				.orElseThrow(() -> new CannotFoundGroupException("그룹을 찾지 못했습니다."));
 
-		if (studyGroup.isEmpty())
-		{
-			throw new CannotFoundGroupException("그룹을 찾지 못했습니다.");
-		}
-
-		if (studyGroup.get().getOwner().getId().equals(user.getId()))
-			return studyGroup.get().getGroupCode();
+		if (studyGroup.getOwner().getId().equals(user.getId()))
+			return studyGroup.getGroupCode();
 		else
 			throw new UserValidationException("코드를 조회할 권한이 없습니다.");
 	}
