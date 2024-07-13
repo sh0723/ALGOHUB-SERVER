@@ -1,10 +1,8 @@
 package com.gamzabat.algohub.feature.user.controller;
 
-import com.gamzabat.algohub.common.jwt.TokenProvider;
 import com.gamzabat.algohub.feature.user.domain.User;
 import com.gamzabat.algohub.feature.user.dto.*;
 import com.gamzabat.algohub.feature.user.service.UserService;
-import com.gamzabat.algohub.user.dto.*;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
@@ -25,7 +23,6 @@ import lombok.RequiredArgsConstructor;
 @Tag(name = "회원 컨트롤러", description = "회원 관련된 API 명세서")
 public class UserController {
 	private final UserService userService;
-	private final TokenProvider tokenProvider;
 
 	@PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "회원 가입 API")
@@ -68,7 +65,7 @@ public class UserController {
 
 	@DeleteMapping()
 	@Operation(summary = "회원정보삭제 API")
-	public ResponseEntity<Object> deleteUser(@AuthedUser User user, @Valid @RequestPart DeleteUserRequest request, Errors errors){
+	public ResponseEntity<Object> deleteUser(@AuthedUser User user, @Valid @RequestBody DeleteUserRequest request, Errors errors){
 		if (errors.hasErrors()) {
 			throw new RequestException("올바르지 않은 요청입니다.",errors);
 		}

@@ -5,7 +5,6 @@ import com.gamzabat.algohub.common.jwt.dto.JwtDTO;
 import com.gamzabat.algohub.feature.user.dto.*;
 import com.gamzabat.algohub.feature.user.exception.UncorrectedPasswordException;
 import com.gamzabat.algohub.feature.image.service.ImageService;
-import com.gamzabat.algohub.user.dto.*;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
