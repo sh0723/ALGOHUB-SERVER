@@ -64,7 +64,7 @@ public class UserService {
 
 
 	public UserInfoResponse userInfo(User user) {
-		return new UserInfoResponse(user.getEmail(), user.getNickname(),user.getProfileImage());
+		return new UserInfoResponse(user.getEmail(), user.getNickname(),user.getProfileImage(), user.getBjNickname());
 	}
 
 	public void userUpdate(User user, UpdateUserRequest updateUserRequest, MultipartFile profileImage) {

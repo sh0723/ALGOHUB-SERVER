@@ -9,8 +9,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class UserInfoResponse {
     private String email;
-
     private String nickname;
-
     private String profileImage;
+    private String bjNickname;
 }
