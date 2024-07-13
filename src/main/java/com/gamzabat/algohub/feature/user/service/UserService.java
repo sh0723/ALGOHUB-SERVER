@@ -41,6 +41,7 @@ public class UserService {
 			.email(request.email())
 			.password(encodedPassword)
 			.nickname(request.nickname())
+			.bjNickname(request.bjNickname())
 			.profileImage(imageUrl)
 			.role(Role.USER)
 			.build());
@@ -63,7 +64,7 @@ public class UserService {
 
 
 	public UserInfoResponse userInfo(User user) {
-		return new UserInfoResponse(user.getEmail(), user.getNickname(),user.getProfileImage());
+		return new UserInfoResponse(user.getEmail(), user.getNickname(),user.getProfileImage(), user.getBjNickname());
 	}
 
 	public void userUpdate(User user, UpdateUserRequest updateUserRequest, MultipartFile profileImage) {
@@ -77,6 +78,9 @@ public class UserService {
 		}
 		if (updateUserRequest.getNickname() != null && !updateUserRequest.getNickname().isEmpty()) {
 			user.editNickname(updateUserRequest.getNickname());
+		}
+		if (updateUserRequest.getBjNickname() != null && !updateUserRequest.getBjNickname().isEmpty()) {
+			user.editBjNickname(updateUserRequest.getBjNickname());
 		}
 
 		userRepository.save(user);
