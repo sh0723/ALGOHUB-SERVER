@@ -41,6 +41,7 @@ public class UserService {
 			.email(request.email())
 			.password(encodedPassword)
 			.nickname(request.nickname())
+			.bjNickname(request.bjNickname())
 			.profileImage(imageUrl)
 			.role(Role.USER)
 			.build());

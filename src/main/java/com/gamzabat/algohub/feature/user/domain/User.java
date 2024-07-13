@@ -24,6 +24,7 @@ public class User {
 	private String email;
 	private String password;
 	private String nickname;
+	private String bjNickname;
 	private String profileImage;
 
 	@Column(name = "deleted_at")
@@ -33,10 +34,11 @@ public class User {
 
 
 	@Builder
-	public User(String email, String password, String nickname, String profileImage, Role role) {
+	public User(String email, String password, String nickname, String bjNickname,String profileImage, Role role) {
 		this.email = email;
 		this.password = password;
 		this.nickname = nickname;
+		this.bjNickname = bjNickname;
 		this.profileImage = profileImage;
 		this.role = role;
 		this.deletedAt = null;
