@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.gamzabat.algohub.feature.problem.service.ProblemService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,18 +21,18 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
-import com.gamzabat.algohub.domain.Problem;
-import com.gamzabat.algohub.domain.StudyGroup;
-import com.gamzabat.algohub.domain.User;
-import com.gamzabat.algohub.dto.CreateProblemRequest;
-import com.gamzabat.algohub.dto.EditProblemRequest;
-import com.gamzabat.algohub.dto.GetProblemResponse;
+import com.gamzabat.algohub.feature.problem.domain.Problem;
+import com.gamzabat.algohub.feature.studygroup.domain.StudyGroup;
+import com.gamzabat.algohub.feature.user.domain.User;
+import com.gamzabat.algohub.feature.problem.dto.CreateProblemRequest;
+import com.gamzabat.algohub.feature.problem.dto.EditProblemRequest;
+import com.gamzabat.algohub.feature.problem.dto.GetProblemResponse;
 import com.gamzabat.algohub.enums.Role;
 import com.gamzabat.algohub.exception.ProblemValidationException;
 import com.gamzabat.algohub.exception.StudyGroupValidationException;
-import com.gamzabat.algohub.repository.GroupMemberRepository;
-import com.gamzabat.algohub.repository.ProblemRepository;
-import com.gamzabat.algohub.repository.StudyGroupRepository;
+import com.gamzabat.algohub.feature.studygroup.repository.GroupMemberRepository;
+import com.gamzabat.algohub.feature.problem.repository.ProblemRepository;
+import com.gamzabat.algohub.feature.studygroup.repository.StudyGroupRepository;
 
 @ExtendWith(MockitoExtension.class)
 class ProblemServiceTest {
