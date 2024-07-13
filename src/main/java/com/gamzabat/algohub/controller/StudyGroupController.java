@@ -5,6 +5,8 @@ import java.util.List;
 import com.gamzabat.algohub.domain.GroupMember;
 import com.gamzabat.algohub.dto.CheckSolvedProblemResponse;
 import com.gamzabat.algohub.dto.GetGroupMemberResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
@@ -36,6 +38,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/group")
 @Tag(name = "그룹 API", description = "스터디 그룹 관련 API")
 public class StudyGroupController {
+	private static final Logger log = LoggerFactory.getLogger(StudyGroupController.class);
 	private final StudyGroupService studyGroupService;
 
 	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -90,8 +93,8 @@ public class StudyGroupController {
 	@GetMapping(value = "problem-solving")
 	@Operation(summary = "문제 별 회원 풀이 여부 조회")
 	public ResponseEntity<Object> getCheckingSolvedProblem(@AuthedUser User user, @RequestParam Long problemId) {
-		List<CheckSolvedProblemResponse> responseList = studyGroupService.checkSolvedProblem(user,problemId);
-		return ResponseEntity.ok().body(responseList);
+			List<CheckSolvedProblemResponse> responseList = studyGroupService.getChekingSolvedProblem(user,problemId);
+			return ResponseEntity.ok().body(responseList);
 	}
 
 	@GetMapping(value = "group-code")

@@ -8,8 +8,7 @@ import java.util.Optional;
 import com.gamzabat.algohub.domain.*;
 import com.gamzabat.algohub.dto.CheckSolvedProblemResponse;
 import com.gamzabat.algohub.dto.GetGroupMemberResponse;
-import com.gamzabat.algohub.exception.CannotFoundGroupException;
-import com.gamzabat.algohub.exception.UserValidationException;
+import com.gamzabat.algohub.exception.*;
 import com.gamzabat.algohub.repository.ProblemRepository;
 import com.gamzabat.algohub.repository.SolutionRepository;
 import org.springframework.http.HttpStatus;
@@ -19,8 +18,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 import com.gamzabat.algohub.dto.EditGroupRequest;
 import com.gamzabat.algohub.dto.GetStudyGroupResponse;
-import com.gamzabat.algohub.exception.GroupMemberValidationException;
-import com.gamzabat.algohub.exception.StudyGroupValidationException;
 import com.gamzabat.algohub.repository.GroupMemberRepository;
 import com.gamzabat.algohub.repository.StudyGroupRepository;
 
@@ -116,7 +113,7 @@ public class StudyGroupService {
 			throw new CannotFoundGroupException("그룹을 찾을 수 없습니다.");
 		}
 
-		if (groupMemberRepository.existsByUser(user) || group.get().getOwner().getId().equals(user.getId())) {
+		if (groupMemberRepository.existsByUserAndStudyGroup(user, group.get()) || group.get().getOwner().getId().equals(user.getId())) {
 			List<GroupMember> groupMembers = groupMemberRepository.findAllByStudyGroup(group.get());
 
 
@@ -135,18 +132,18 @@ public class StudyGroupService {
 		}
 	}
 
-	public List<CheckSolvedProblemResponse> checkSolvedProblem(User user, Long problemId) {
+	public List<CheckSolvedProblemResponse> getChekingSolvedProblem(User user, Long problemId) {
 		Problem problem = problemRepository.getById(problemId);
 		StudyGroup studyGroup = problem.getStudyGroup();
 
 		if (studyGroup == null) {
-			throw new UserValidationException("그룹을 찾을 수 없습니다.");
+			throw new CannotFoundGroupException("그룹을 찾을 수 없습니다.");
 		}
 		if (problem == null) {
-			throw new UserValidationException("문제를 찾을 수 없습니다.");
+			throw new CannotFoundProblemException("문제를 찾을 수 없습니다.");
 		}
 
-		if (groupMemberRepository.existsByUser(user) || studyGroup.getOwner().getId().equals(user.getId())) {
+		if (groupMemberRepository.existsByUserAndStudyGroup(user,studyGroup) || studyGroup.getOwner().getId().equals(user.getId())) {
 			List<GroupMember> groupMembers = groupMemberRepository.findAllByStudyGroup(studyGroup);
 
 			List<CheckSolvedProblemResponse> responseList = new ArrayList<>();
@@ -157,10 +154,10 @@ public class StudyGroupService {
 				String nickname = groupMember.getUser().getNickname();
 
 				Boolean solved;
-				if (solutionRepository.findByUserAndProblem(groupMember.getUser(), problem) == null)
-					solved = false;
-				else
+				if (solutionRepository.existsByUserAndProblem(groupMember.getUser(), problem))
 					solved = true;
+				else
+					solved = false;
 
 
 				responseList.add(new CheckSolvedProblemResponse(groupMemberId, profileImage, nickname, solved));
@@ -178,7 +175,7 @@ public class StudyGroupService {
 
 		if (studyGroup.isEmpty())
 		{
-			throw new UserValidationException("그룹을 찾지 못했습니다.");
+			throw new CannotFoundGroupException("그룹을 찾지 못했습니다.");
 		}
 
 		if (studyGroup.get().getOwner().getId().equals(user.getId()))
