@@ -3,12 +3,12 @@ package com.gamzabat.algohub.feature.studygroup.service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import com.gamzabat.algohub.feature.problem.domain.Problem;
 import com.gamzabat.algohub.feature.studygroup.domain.GroupMember;
 import com.gamzabat.algohub.feature.studygroup.domain.StudyGroup;
 import com.gamzabat.algohub.feature.studygroup.dto.CheckSolvedProblemResponse;
+import com.gamzabat.algohub.feature.studygroup.dto.CreateGroupRequest;
 import com.gamzabat.algohub.feature.studygroup.dto.GetGroupMemberResponse;
 import com.gamzabat.algohub.feature.studygroup.dto.GetStudyGroupResponse;
 import com.gamzabat.algohub.feature.studygroup.exception.CannotFoundGroupException;
@@ -44,10 +44,13 @@ public class StudyGroupService {
 	private final ProblemRepository problemRepository;
 	private final StudyGroupRepository studyGroupRepository;
 
-	public void createGroup(User user, String name, MultipartFile profileImage) {
+	public void createGroup(User user, CreateGroupRequest request, MultipartFile profileImage) {
 		String imageUrl = imageService.saveImage(profileImage);
 		groupRepository.save(StudyGroup.builder()
-			.name(name)
+			.name(request.name())
+			.startDate(request.startDate())
+			.endDate(request.endDate())
+			.introduction(request.introduction())
 			.groupImage(imageUrl)
 			.owner(user)
 			.groupCode(NanoIdUtils.randomNanoId())

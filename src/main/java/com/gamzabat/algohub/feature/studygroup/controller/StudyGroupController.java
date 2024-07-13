@@ -3,9 +3,8 @@ package com.gamzabat.algohub.feature.studygroup.controller;
 import java.util.List;
 
 import com.gamzabat.algohub.feature.studygroup.dto.CheckSolvedProblemResponse;
+import com.gamzabat.algohub.feature.studygroup.dto.CreateGroupRequest;
 import com.gamzabat.algohub.feature.studygroup.dto.GetGroupMemberResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
@@ -37,14 +36,13 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/group")
 @Tag(name = "그룹 API", description = "스터디 그룹 관련 API")
 public class StudyGroupController {
-	private static final Logger log = LoggerFactory.getLogger(StudyGroupController.class);
 	private final StudyGroupService studyGroupService;
 
 	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "그룹 생성 API")
 	public ResponseEntity<Object> createGroup(@AuthedUser User user,
-		@RequestParam String name, @RequestPart(required = false) MultipartFile profileImage){
-		studyGroupService.createGroup(user, name, profileImage);
+		@RequestPart CreateGroupRequest request, @RequestPart(required = false) MultipartFile profileImage){
+		studyGroupService.createGroup(user, request, profileImage);
 		return ResponseEntity.ok().body("OK");
 	}
 

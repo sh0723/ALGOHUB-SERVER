@@ -1,5 +1,6 @@
 package com.gamzabat.algohub.feature.studygroup.domain;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import com.gamzabat.algohub.feature.user.domain.User;
@@ -27,6 +28,9 @@ public class StudyGroup {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	private String name;
+	private LocalDate startDate;
+	private LocalDate endDate;
+	private String introduction;
 	private String groupImage;
 	private String groupCode;
 
@@ -37,8 +41,12 @@ public class StudyGroup {
 	private LocalDateTime deletedAt;
 
 	@Builder
-	public StudyGroup(String name, String groupImage, String groupCode, User owner) {
+	public StudyGroup(String name, LocalDate startDate, LocalDate endDate, String introduction, String groupImage,
+		String groupCode, User owner) {
 		this.name = name;
+		this.startDate = startDate;
+		this.endDate = endDate;
+		this.introduction = introduction;
 		this.groupImage = groupImage;
 		this.groupCode = groupCode;
 		this.owner = owner;
