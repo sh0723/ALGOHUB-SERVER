@@ -107,8 +107,15 @@ public class StudyGroupService {
 
 		if(request.name() != null && !request.name().equals(group.getName()))
 			group.editName(request.name());
+		if (request.startDate() != null)
+			group.editStartDate(request.startDate());
+		if (request.endDate() != null)
+			group.editEndDate(request.endDate());
+		if (request.introduction() != null)
+			group.editIntroduction(request.introduction());
 		if(groupImage != null){
-			imageService.deleteImage(group.getGroupImage());
+			if(group.getGroupImage() != null)
+				imageService.deleteImage(group.getGroupImage());
 			String imageUrl = imageService.saveImage(groupImage);
 			group.editGroupImage(imageUrl);
 		}

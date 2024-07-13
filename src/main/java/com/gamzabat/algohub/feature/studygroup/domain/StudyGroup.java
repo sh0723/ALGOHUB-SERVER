@@ -54,4 +54,15 @@ public class StudyGroup {
 
 	public void editName(String name){this.name = name;}
 	public void editGroupImage(String groupImage){this.groupImage = groupImage;}
+
+	public void editStartDate(LocalDate startDate) {
+		this.startDate = startDate;
+	}
+	public void editEndDate(LocalDate endDate){
+		this.endDate = endDate;
+	}
+
+	public void editIntroduction(String introduction) {
+		this.introduction = introduction;
+	}
 }
