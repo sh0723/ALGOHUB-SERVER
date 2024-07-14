@@ -30,6 +30,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/api/problem")
 @Tag(name = "문제 API", description = "그룹별 문제 관련 API")
+
 public class ProblemController {
 	private final ProblemService problemService;
 
@@ -66,5 +67,4 @@ public class ProblemController {
 		problemService.deleteProblem(user,problemId);
 		return ResponseEntity.ok().body("OK");
 	}
-
 }

@@ -2,6 +2,7 @@ package com.gamzabat.algohub.exception;
 
 import com.gamzabat.algohub.feature.comment.exception.CommentValidationException;
 import com.gamzabat.algohub.feature.comment.exception.SolutionValidationException;
+import com.gamzabat.algohub.feature.problem.exception.NotBojLinkException;
 import com.gamzabat.algohub.feature.studygroup.exception.CannotFoundGroupException;
 import com.gamzabat.algohub.feature.studygroup.exception.GroupMemberValidationException;
 import com.gamzabat.algohub.feature.user.exception.UncorrectedPasswordException;
@@ -54,5 +55,9 @@ public class CustomExceptionHandler {
 	@ExceptionHandler(CannotFoundGroupException.class)
 	protected  ResponseEntity<Object> handler(CannotFoundGroupException e) {
 		return ResponseEntity.badRequest().body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), e.getErrors(), null));
+	}
+	@ExceptionHandler(NotBojLinkException.class)
+	protected ResponseEntity<Object> handler(NotBojLinkException e){
+		return ResponseEntity.badRequest().body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(),e.getError(),null));
 	}
 }
