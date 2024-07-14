@@ -67,19 +67,4 @@ public class ProblemController {
 		problemService.deleteProblem(user,problemId);
 		return ResponseEntity.ok().body("OK");
 	}
-	@GetMapping("/test")
-	@Operation(summary = "외부 API 테스트")
-
-	public ResponseEntity<Object> test(@RequestParam String request){
-		String response = problemService.getProblemLevel(request);
-		return ResponseEntity.ok().body(response);
-	}
-
-	@GetMapping("/test2")
-	@Operation(summary = "title 외부 API 테스트")
-
-	public ResponseEntity<Object> titleTest(@RequestParam String request){
-		String response = problemService.getProblemTitle(request);
-		return ResponseEntity.ok().body(response);
-	}
 }

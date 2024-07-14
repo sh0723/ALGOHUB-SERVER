@@ -43,7 +43,7 @@ public class ProblemService {
 		int level = Integer.parseInt(getProblemLevel(getProblemId(request)));
 		String title = getProblemTitle(getProblemId(request));
 
-		problemRepository.save(Problem.builder() // 크롤링 후 level, title 정보 필요
+		problemRepository.save(Problem.builder()
 			.studyGroup(group)
 			.link(request.link())
 				.title(title)
@@ -98,7 +98,7 @@ public class ProblemService {
 		if(!group.getOwner().getId().equals(user.getId()))
 			throw new StudyGroupValidationException(HttpStatus.FORBIDDEN.value(), "문제에 대한 권한이 없습니다. : "+permission);
 	}
-	public String getProblemLevel(String problemId){
+	private String getProblemLevel(String problemId){
 		final RestTemplate restTemplate= new RestTemplate();
 
 		String url = "https://solved.ac/api/v3/problem/lookup?problemIds=" + problemId;
@@ -122,7 +122,7 @@ public class ProblemService {
 			return "Error occurred";
 		}
 	}
-	public String getProblemTitle(String problemId){
+	private String getProblemTitle(String problemId){
 		final RestTemplate restTemplate= new RestTemplate();
 		String url = "https://solved.ac/api/v3/problem/lookup?problemIds=" + problemId;
 
