@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gamzabat.algohub.feature.problem.domain.Problem;
 import com.gamzabat.algohub.feature.problem.dto.CreateProblemRequest;
 import com.gamzabat.algohub.feature.problem.dto.EditProblemRequest;
+import com.gamzabat.algohub.feature.problem.exception.NotBojLinkException;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 
@@ -146,6 +147,8 @@ public class ProblemService {
 	private String getProblemId(CreateProblemRequest reuqest) {
 		String url = reuqest.link();
 		String[] parts = url.split("/");
+		if(!parts[2].equals("www.acmicpc.net"))
+			throw new NotBojLinkException(HttpStatus.BAD_REQUEST.value(),"백준 링크가 아닙니다");
         return parts[parts.length - 1];
 	}
 }
