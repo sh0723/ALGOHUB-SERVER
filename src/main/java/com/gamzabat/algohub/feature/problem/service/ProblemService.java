@@ -2,10 +2,12 @@ package com.gamzabat.algohub.feature.problem.service;
 
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gamzabat.algohub.feature.problem.domain.Problem;
 import com.gamzabat.algohub.feature.problem.dto.CreateProblemRequest;
 import com.gamzabat.algohub.feature.problem.dto.EditProblemRequest;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 
 import com.gamzabat.algohub.feature.studygroup.domain.StudyGroup;
@@ -16,6 +18,9 @@ import com.gamzabat.algohub.exception.StudyGroupValidationException;
 import com.gamzabat.algohub.feature.studygroup.repository.GroupMemberRepository;
 import com.gamzabat.algohub.feature.problem.repository.ProblemRepository;
 import com.gamzabat.algohub.feature.studygroup.repository.StudyGroupRepository;
+
+
+import org.springframework.web.client.RestTemplate;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -34,9 +39,14 @@ public class ProblemService {
 
 		checkOwnerPermission(user, group, "create");
 
+		int level = Integer.parseInt(getProblemLevel(getProblemId(request)));
+		String title = getProblemTitle(getProblemId(request));
+
 		problemRepository.save(Problem.builder() // 크롤링 후 level, title 정보 필요
 			.studyGroup(group)
 			.link(request.link())
+				.title(title)
+				.level(level)
 			.deadline(request.deadline())
 			.build());
 
@@ -86,5 +96,56 @@ public class ProblemService {
 	private static void checkOwnerPermission(User user, StudyGroup group, String permission) {
 		if(!group.getOwner().getId().equals(user.getId()))
 			throw new StudyGroupValidationException(HttpStatus.FORBIDDEN.value(), "문제에 대한 권한이 없습니다. : "+permission);
+	}
+	public String getProblemLevel(String problemId){
+		final RestTemplate restTemplate= new RestTemplate();
+
+		String url = "https://solved.ac/api/v3/problem/lookup?problemIds=" + problemId;
+
+		try {
+			ResponseEntity<String> responseEntity = restTemplate.getForEntity(url, String.class);
+			String responseBody = responseEntity.getBody();
+
+			ObjectMapper objectMapper = new ObjectMapper();
+			JsonNode root = objectMapper.readTree(responseBody);
+			if (root.isArray() && root.size() > 0) {
+				JsonNode firstElement = root.get(0);
+				int level = firstElement.get("level").asInt();
+				return String.valueOf(level);
+			} else {
+				System.out.println("No data found for the given problem ID");
+				return "No data found";
+			}
+		} catch (Exception e) {
+			System.out.println("An error occurred: " + e.getMessage());
+			return "Error occurred";
+		}
+	}
+	public String getProblemTitle(String problemId){
+		final RestTemplate restTemplate= new RestTemplate();
+		String url = "https://solved.ac/api/v3/problem/lookup?problemIds=" + problemId;
+
+		try {
+			ResponseEntity<String> responseEntity = restTemplate.getForEntity(url, String.class);
+			String responseBody = responseEntity.getBody();
+
+			ObjectMapper objectMapper = new ObjectMapper();
+			JsonNode root = objectMapper.readTree(responseBody);
+			if (root.isArray() && root.size() > 0) {
+				JsonNode firstElement = root.get(0);
+                return firstElement.get("titleKo").asText();
+			} else {
+				System.out.println("No data found for the given problem ID");
+				return "No data found";
+			}
+		} catch (Exception e) {
+			System.out.println("An error occurred: " + e.getMessage());
+			return "Error occurred";
+		}
+	}
+	private String getProblemId(CreateProblemRequest reuqest) {
+		String url = reuqest.link();
+		String[] parts = url.split("/");
+        return parts[parts.length - 1];
 	}
 }
