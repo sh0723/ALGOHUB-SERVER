@@ -78,9 +78,9 @@ public class UserService {
 		if (profileImage != null && !profileImage.isEmpty()) {
 			if (user.getProfileImage() != null && !user.getProfileImage().isEmpty()) {
 				imageService.deleteImage(user.getProfileImage());
-				String imageUrl = imageService.saveImage(profileImage);
-				user.editProfileImage(imageUrl);
 			}
+			String imageUrl = imageService.saveImage(profileImage);
+			user.editProfileImage(imageUrl);
 		}
 		if (updateUserRequest.getNickname() != null && !updateUserRequest.getNickname().isEmpty()) {
 			user.editNickname(updateUserRequest.getNickname());
