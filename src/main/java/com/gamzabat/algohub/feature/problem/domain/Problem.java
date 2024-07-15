@@ -29,6 +29,7 @@ public class Problem {
 	private Long id;
 	private String link;
 	private LocalDate deadline;
+	private Integer number;
 	private String title;
 	private Integer level;
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -37,8 +38,9 @@ public class Problem {
 	private LocalDateTime deletedAt;
 
 	@Builder
-	public Problem(String link, LocalDate deadline, String title, Integer level, StudyGroup studyGroup) {
+	public Problem(String link, LocalDate deadline, Integer number, String title, Integer level, StudyGroup studyGroup) {
 		this.link = link;
+		this.number = number;
 		this.deadline = deadline;
 		this.title = title;
 		this.level = level;

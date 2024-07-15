@@ -40,12 +40,14 @@ public class ProblemService {
 
 		checkOwnerPermission(user, group, "create");
 
-		int level = Integer.parseInt(getProblemLevel(getProblemId(request)));
-		String title = getProblemTitle(getProblemId(request));
+		String number = getProblemId(request);
+		int level = Integer.parseInt(getProblemLevel(number));
+		String title = getProblemTitle(number);
 
 		problemRepository.save(Problem.builder()
 			.studyGroup(group)
 			.link(request.link())
+				.number(Integer.parseInt(number))
 				.title(title)
 				.level(level)
 			.deadline(request.deadline())
