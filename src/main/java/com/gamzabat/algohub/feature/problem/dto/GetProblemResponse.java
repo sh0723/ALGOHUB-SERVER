@@ -6,6 +6,7 @@ import java.time.LocalDate;
 
 @Getter
 public class GetProblemResponse {
+	private String title;
 	private Long problemId;
 	private String link;
 	private LocalDate deadline;
@@ -15,7 +16,8 @@ public class GetProblemResponse {
 	private Integer accurancy;
 
 
-	public GetProblemResponse(Long problemId, String link, LocalDate deadline, Integer level, Integer submissionCount, Integer memberCount, Integer accurancy) {
+	public GetProblemResponse(String title,Long problemId, String link, LocalDate deadline, Integer level, Integer submissionCount, Integer memberCount, Integer accurancy) {
+		this.title = title;
 		this.problemId = problemId;
 		this.link = link;
 		this.deadline = deadline;

@@ -78,6 +78,7 @@ public class ProblemService {
 		List<Problem> problems = problemRepository.findAllByStudyGroup(group);
 		List<GetProblemResponse> list = new ArrayList<>();
 		for (Problem problem : problems) {
+			String title = problem.getTitle();
 			Long problemId = problem.getId();
 			String link = problem.getLink();
 			LocalDate deadline = problem.getDeadline();
@@ -96,7 +97,7 @@ public class ProblemService {
 				accurancy = TempAccurancy.intValue();
 			}
 
-			list.add(new GetProblemResponse(problemId,link,deadline,level,submitMemberCount,groupMemberCount,accurancy));
+			list.add(new GetProblemResponse(title,problemId,link,deadline,level,submitMemberCount,groupMemberCount,accurancy));
 		}
 
 		log.info("success to get problem list");
