@@ -41,7 +41,9 @@ public class StudyGroupController {
 	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "그룹 생성 API")
 	public ResponseEntity<Object> createGroup(@AuthedUser User user,
-		@RequestPart CreateGroupRequest request, @RequestPart(required = false) MultipartFile profileImage){
+		@Valid @RequestPart CreateGroupRequest request, Errors errors, @RequestPart(required = false) MultipartFile profileImage){
+		if (errors.hasErrors())
+			throw new RequestException("그룹 생성 요청이 올바르지 않습니다.",errors);
 		studyGroupService.createGroup(user, request, profileImage);
 		return ResponseEntity.ok().body("OK");
 	}
