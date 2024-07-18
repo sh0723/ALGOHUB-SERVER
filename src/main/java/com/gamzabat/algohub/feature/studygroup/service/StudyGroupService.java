@@ -42,7 +42,6 @@ public class StudyGroupService {
 	private final ImageService imageService;
 	private final SolutionRepository solutionRepository;
 	private final ProblemRepository problemRepository;
-	private final StudyGroupRepository studyGroupRepository;
 
 	public void createGroup(User user, CreateGroupRequest request, MultipartFile profileImage) {
 		String imageUrl = imageService.saveImage(profileImage);
@@ -179,7 +178,7 @@ public class StudyGroupService {
 	}
 
 	public String getGroupCode(User user, Long groupId) {
-		StudyGroup studyGroup = studyGroupRepository.findById(groupId)
+		StudyGroup studyGroup = groupRepository.findById(groupId)
 				.orElseThrow(() -> new CannotFoundGroupException("그룹을 찾지 못했습니다."));
 
 		if (studyGroup.getOwner().getId().equals(user.getId()))
