@@ -1,17 +1,40 @@
 package com.gamzabat.algohub.feature.problem.dto;
 
+import lombok.Getter;
+
 import java.time.LocalDate;
 
-import com.gamzabat.algohub.feature.problem.domain.Problem;
+@Getter
+public class GetProblemResponse {
+	private String title;
+	private Long problemId;
+	private String link;
+	private LocalDate deadline;
+	private Integer level;
+	private Integer submitMemberCount;
+	private Integer memberCount;
+	private Integer accurancy;
 
-import lombok.Builder;
 
-@Builder
-public record GetProblemResponse(Long problemId,
+	public GetProblemResponse(String title,Long problemId, String link, LocalDate deadline, Integer level, Integer submissionCount, Integer memberCount, Integer accurancy) {
+		this.title = title;
+		this.problemId = problemId;
+		this.link = link;
+		this.deadline = deadline;
+		this.level = level;
+		this.submitMemberCount = submissionCount;
+		this.memberCount = memberCount;
+		this.accurancy = accurancy;
+	}
+}
+/*public record GetProblemResponse(Long problemId,
 								 String link,
 								 String title,
 								 LocalDate deadline,
-								 Integer level) {
+								 Integer level,
+								 Integer submissionCount,
+								 Integer memberCount,
+								 Integer accurancy) {
 	public static GetProblemResponse toDTO(Problem problem){
 		return GetProblemResponse.builder()
 			.problemId(problem.getId())
@@ -21,4 +44,4 @@ public record GetProblemResponse(Long problemId,
 			.level(problem.getLevel())
 			.build();
 	}
-}
+}*/

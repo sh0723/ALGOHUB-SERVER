@@ -1,5 +1,7 @@
 package com.gamzabat.algohub.feature.problem.service;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -8,6 +10,7 @@ import com.gamzabat.algohub.feature.problem.domain.Problem;
 import com.gamzabat.algohub.feature.problem.dto.CreateProblemRequest;
 import com.gamzabat.algohub.feature.problem.dto.EditProblemRequest;
 import com.gamzabat.algohub.feature.problem.exception.NotBojLinkException;
+import com.gamzabat.algohub.feature.solution.repository.SolutionRepository;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional
 @RequiredArgsConstructor
 public class ProblemService {
+	private final SolutionRepository solutionRepository;
 	private final ProblemRepository problemRepository;
 	private final StudyGroupRepository studyGroupRepository;
 	private final GroupMemberRepository groupMemberRepository;
@@ -72,7 +76,30 @@ public class ProblemService {
 			throw new ProblemValidationException(HttpStatus.FORBIDDEN.value(),"문제를 조회할 권한이 없습니다.");
 
 		List<Problem> problems = problemRepository.findAllByStudyGroup(group);
-		List<GetProblemResponse> list = problems.stream().map(GetProblemResponse::toDTO).toList();
+		List<GetProblemResponse> list = new ArrayList<>();
+		for (Problem problem : problems) {
+			String title = problem.getTitle();
+			Long problemId = problem.getId();
+			String link = problem.getLink();
+			LocalDate deadline = problem.getDeadline();
+			Integer level = problem.getLevel();
+			Integer correctCount = solutionRepository.countDistinctUsersWithCorrectSolutionsByProblemId(problemId);
+			Integer submitMemberCount = solutionRepository.countDistinctUsersByProblemId(problemId);
+			Integer groupMemberCount= groupMemberRepository.countMembersByStudyGroupId(groupId);
+			Integer accurancy;
+			if (submitMemberCount == 0) {
+				accurancy = 0;
+			}
+			else {
+				Double TempCorrectCount = correctCount.doubleValue();
+				Double TempSubmitMemberCount = submitMemberCount.doubleValue();
+				Double TempAccurancy = ((TempCorrectCount / TempSubmitMemberCount) * 100);
+				accurancy = TempAccurancy.intValue();
+			}
+
+			list.add(new GetProblemResponse(title,problemId,link,deadline,level,submitMemberCount,groupMemberCount,accurancy));
+		}
+
 		log.info("success to get problem list");
 		return list;
 	}
