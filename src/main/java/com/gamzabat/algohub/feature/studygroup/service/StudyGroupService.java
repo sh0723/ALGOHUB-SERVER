@@ -108,20 +108,18 @@ public class StudyGroupService {
 		if(!group.getOwner().getId().equals(user.getId()))
 			throw new StudyGroupValidationException(HttpStatus.FORBIDDEN.value(), "그룹 정보 수정에 대한 권한이 없습니다.");
 
-		if(request.name() != null && !request.name().equals(group.getName()))
-			group.editName(request.name());
-		if (request.startDate() != null)
-			group.editStartDate(request.startDate());
-		if (request.endDate() != null)
-			group.editEndDate(request.endDate());
-		if (request.introduction() != null)
-			group.editIntroduction(request.introduction());
 		if(groupImage != null){
 			if(group.getGroupImage() != null)
 				imageService.deleteImage(group.getGroupImage());
 			String imageUrl = imageService.saveImage(groupImage);
 			group.editGroupImage(imageUrl);
 		}
+		group.editGroupInfo(
+			request.name(),
+			request.startDate(),
+			request.endDate(),
+			request.introduction()
+		);
 		log.info("success to edit group info");
 	}
 
