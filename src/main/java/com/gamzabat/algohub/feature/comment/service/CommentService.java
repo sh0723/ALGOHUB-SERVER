@@ -9,6 +9,7 @@ import com.gamzabat.algohub.feature.comment.exception.CommentValidationException
 import com.gamzabat.algohub.feature.comment.exception.SolutionValidationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.gamzabat.algohub.feature.problem.domain.Problem;
 import com.gamzabat.algohub.feature.solution.domain.Solution;
@@ -24,13 +25,11 @@ import com.gamzabat.algohub.feature.problem.repository.ProblemRepository;
 import com.gamzabat.algohub.feature.solution.repository.SolutionRepository;
 import com.gamzabat.algohub.feature.studygroup.repository.StudyGroupRepository;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class CommentService {
 	private final CommentRepository commentRepository;
@@ -38,6 +37,8 @@ public class CommentService {
 	private final ProblemRepository problemRepository;
 	private final StudyGroupRepository studyGroupRepository;
 	private final GroupMemberRepository groupMemberRepository;
+
+	@Transactional
 	public void createComment(User user, CreateCommentRequest request) {
 		Solution solution = checkSolutionValidation(user, request.solutionId());
 
@@ -50,6 +51,7 @@ public class CommentService {
 		log.info("success to create comment");
 	}
 
+	@Transactional(readOnly = true)
 	public List<GetCommentResponse> getCommentList(User user, Long solutionId) {
 		Solution solution = checkSolutionValidation(user, solutionId);
 		if(!solution.getUser().getId().equals(user.getId()))
@@ -61,6 +63,7 @@ public class CommentService {
 		return result;
 	}
 
+	@Transactional
 	public void deleteComment(User user, Long commentId) {
 		Comment comment = commentRepository.findById(commentId)
 			.orElseThrow(() -> new CommentValidationException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 댓글 입니다."));
