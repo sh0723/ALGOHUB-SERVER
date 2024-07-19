@@ -37,17 +37,18 @@
 		private String language;
 		private Integer codeLength;
 
+
 		@Builder
 		public Solution(Problem problem, User user, LocalDate solvedDate, String content, boolean isCorrect,
-			Integer memoryUsage, Integer executionTime, String language, Integer codeLength) {
+						Integer memoryUsage, Integer executionTime, String language, Integer codeLength) {
 			this.problem = problem;
 			this.user = user;
-			this.solvedDate = solvedDate;
-			this.content = content;
-			this.isCorrect = isCorrect;
-			this.memoryUsage = memoryUsage;
-			this.executionTime = executionTime;
-			this.language = language;
-			this.codeLength = codeLength;
+			this.solvedDate = solvedDate;        //??
+			this.content = content;                //??
+			this.isCorrect = isCorrect;            //정답 여부
+			this.memoryUsage = memoryUsage;    //메모리
+			this.executionTime = executionTime; //시간
+			this.language = language;            //사용 언어
+			this.codeLength = codeLength;        //코드 길이
 		}
 	}
