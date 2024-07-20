@@ -68,7 +68,7 @@ class CommentServiceTest {
 			.role(Role.USER).profileImage("image").build();
 		studyGroup = StudyGroup.builder().owner(user).build();
 		problem = Problem.builder().studyGroup(studyGroup).build();
-		solution = Solution.builder().problem(problem).content("solution").build();
+		solution = Solution.builder().problem(problem).user(user).content("solution").build();
 		comment = Comment.builder().user(user).content("content").solution(solution).build();
 		comment2 = Comment.builder().user(user2).content("content").solution(solution).build();
 
