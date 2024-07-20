@@ -54,9 +54,6 @@ public class CommentService {
 	@Transactional(readOnly = true)
 	public List<GetCommentResponse> getCommentList(User user, Long solutionId) {
 		Solution solution = checkSolutionValidation(user, solutionId);
-		if(!solution.getUser().getId().equals(user.getId()))
-			throw new CommentValidationException(HttpStatus.FORBIDDEN.value(),"댓글 확인에 대한 권한이 없습니다.");
-
 		List<Comment> list = commentRepository.findAllBySolution(solution);
 		List<GetCommentResponse> result = list.stream().map(GetCommentResponse::toDTO).toList();
 		log.info("success to get comment list");
