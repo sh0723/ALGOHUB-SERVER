@@ -5,8 +5,6 @@ import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Field;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import com.gamzabat.algohub.feature.problem.service.ProblemService;
@@ -22,12 +20,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
 import com.gamzabat.algohub.feature.problem.domain.Problem;
-import com.gamzabat.algohub.feature.solution.repository.SolutionRepository;
 import com.gamzabat.algohub.feature.studygroup.domain.StudyGroup;
 import com.gamzabat.algohub.feature.user.domain.User;
 import com.gamzabat.algohub.feature.problem.dto.CreateProblemRequest;
 import com.gamzabat.algohub.feature.problem.dto.EditProblemRequest;
-import com.gamzabat.algohub.feature.problem.dto.GetProblemResponse;
 import com.gamzabat.algohub.enums.Role;
 import com.gamzabat.algohub.exception.ProblemValidationException;
 import com.gamzabat.algohub.exception.StudyGroupValidationException;
@@ -45,8 +41,6 @@ class ProblemServiceTest {
 	private StudyGroupRepository groupRepository;
 	@Mock
 	private GroupMemberRepository groupMemberRepository;
-	@Mock
-	private SolutionRepository solutionRepository;
 
 	private User user;
 	private User user2;
@@ -84,17 +78,20 @@ class ProblemServiceTest {
 		// given
 		CreateProblemRequest request = CreateProblemRequest.builder()
 			.groupId(10L)
-			.link("link")
+			.link("https://www.acmicpc.net/problem/1000")
 			.deadline(LocalDate.now())
 			.build();
 		when(groupRepository.findById(10L)).thenReturn(Optional.ofNullable(group));
 		// when
-		problemService.createProblem(user,request);
+		problemService.createProblem(user, request);
 		// then
-		verify(problemRepository,times(1)).save(problemCaptor.capture());
+		verify(problemRepository, times(1)).save(problemCaptor.capture());
 		Problem result = problemCaptor.getValue();
 		assertThat(result.getStudyGroup()).isEqualTo(group);
-		assertThat(result.getLink()).isEqualTo("link");
+		assertThat(result.getLink()).isEqualTo("https://www.acmicpc.net/problem/1000");
+		assertThat(result.getNumber()).isEqualTo(1000);
+		assertThat(result.getTitle()).isEqualTo("A+B");
+		assertThat(result.getLevel()).isEqualTo(1);
 		assertThat(result.getDeadline()).isEqualTo(LocalDate.now());
 	}
 
