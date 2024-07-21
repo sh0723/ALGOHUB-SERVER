@@ -28,7 +28,8 @@ public class Problem {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	private String link;
-	private LocalDate deadline;
+	private LocalDate startDate;
+	private LocalDate endDate;
 	private Integer number;
 	private String title;
 	private Integer level;
@@ -38,14 +39,18 @@ public class Problem {
 	private LocalDateTime deletedAt;
 
 	@Builder
-	public Problem(String link, LocalDate deadline, Integer number, String title, Integer level, StudyGroup studyGroup) {
+	public Problem(String link, LocalDate startDate, LocalDate endDate, Integer number, String title, Integer level, StudyGroup studyGroup) {
 		this.link = link;
 		this.number = number;
-		this.deadline = deadline;
+		this.startDate = startDate;
+		this.endDate = endDate;
 		this.title = title;
 		this.level = level;
 		this.studyGroup = studyGroup;
 	}
 
-	public void editDeadline(LocalDate deadline){this.deadline = deadline;}
+	public void editProblemInfo(LocalDate startDate, LocalDate endDate){
+		this.startDate = startDate;
+		this.endDate = endDate;
+	}
 }
