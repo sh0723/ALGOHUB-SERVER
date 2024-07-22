@@ -1,10 +1,7 @@
 package com.gamzabat.algohub.feature.solution.service;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -14,10 +11,7 @@ import com.gamzabat.algohub.feature.solution.domain.Solution;
 import com.gamzabat.algohub.feature.solution.dto.CreateSolutionRequest;
 import com.gamzabat.algohub.feature.solution.dto.GetSolutionResponse;
 import com.gamzabat.algohub.feature.user.repository.UserRepository;
-import org.json.JSONArray;
 import org.json.JSONObject;
-import org.json.JSONException;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -68,57 +62,42 @@ public class SolutionService {
 	public void createSolution(CreateSolutionRequest request) {
 		Problem problem = problemRepository.findByNumber(request.problemNummber());
 //				.orElseThrow(() -> new ProblemValidationException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 문제 입니다."));
-		User user = userRepository.findByBjNickname(request.userId())
+		User user = userRepository.findByBjNickname(request.userName())
 				.orElseThrow(() -> new UserValidationException("존재하지 않는 유저 입니다."));
 
-		JSONObject problemInformation = getProblemInformation(request.userId(), request.problemNummber(), request.submissionId());
+		JSONObject solutionInformation = getSolutionInformation(request.userName(), request.problemNummber(), request.submissionId());
 
-		if (problemInformation.isEmpty()) {
+		if (solutionInformation.isEmpty()) {
 			throw new ProblemValidationException(HttpStatus.NOT_FOUND.value(), "해당 제출 기록이 없습니다.");
 		}
 
 
 
 		// 필드 값을 안전하게 변환
-		int memoryUsage = parseIntegerSafely(problemInformation.getString("memory"));
-		int executionTime = parseIntegerSafely(problemInformation.getString("time"));
-		int codeLength = parseIntegerSafely(problemInformation.getString("codeLength"));
+		int memoryUsage = parseIntegerSafely(solutionInformation.getString("memory"));
+		int executionTime = parseIntegerSafely(solutionInformation.getString("time"));
+		int codeLength = parseIntegerSafely(solutionInformation.getString("codeLength"));
 
-		if(problemInformation.getString("result").equals("맞았습니다!!")) {
+		solutionRepository.save(Solution.builder()
+				.problem(problem)
+				.user(user)
+				.content(request.code())
+				.memoryUsage(memoryUsage)
+				.executionTime(executionTime)
+				.language(solutionInformation.getString("codeType"))
+				.codeLength(codeLength)
+				.isCorrect(solutionInformation.getString("result").equals("맞았습니다!!"))
+				.solvedDate(LocalDate.now())
+				.build()
+		);
 
-			solutionRepository.save(Solution.builder()
-					.problem(problem)
-					.user(user)
-					.content(request.code())
-					.memoryUsage(memoryUsage)
-					.executionTime(executionTime)
-					.language(problemInformation.getString("codeType"))
-					.codeLength(codeLength)
-					.isCorrect(true)
-					.solvedDate(LocalDate.now())
-					.build()
-			);
-		}else{
-			solutionRepository.save(Solution.builder()
-					.problem(problem)
-					.user(user)
-					.content(request.code())
-					.memoryUsage(0)
-					.executionTime(0)
-					.language(problemInformation.getString("codeType"))
-					.codeLength(codeLength)
-					.isCorrect(false)
-					.solvedDate(LocalDate.now())
-					.build()
-			);
-		}
 	}
 	public void test(CreateSolutionRequest request) {
-		log.info("username:"+request.userId());
+		log.info("username:"+request.userName());
 		log.info("code:"+request.code());
 	}
 
-    public JSONObject getProblemInformation(@RequestParam String userId, @RequestParam Integer problemNumber, @RequestParam String submissionId) {
+    public JSONObject getSolutionInformation(@RequestParam String userId, @RequestParam Integer problemNumber, @RequestParam String submissionId) {
 		try {
 			// Python 스크립트 경로
 			String scriptPath = "src/main/resources/crawlProblem.py";

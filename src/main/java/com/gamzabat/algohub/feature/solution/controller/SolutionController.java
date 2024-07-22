@@ -9,6 +9,7 @@ import com.gamzabat.algohub.feature.solution.service.SolutionService;
 import com.gamzabat.algohub.feature.user.domain.User;
 
 
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -41,15 +42,9 @@ public class SolutionController {
 		solutionService.test(request);
 		return ResponseEntity.ok().body("OK");
 	}
-//	@GetMapping("/test")
-//	@Operation(summary = "Solution정보 긁어오기 API 테스트")
-//	public ResponseEntity<Object> problemInformation(String userId,String problemNumber){
-//		ResponseEntity response = solutionService.problemInformation(userId,problemNumber);
-//		return ResponseEntity.ok().body(response);
-//	}
-	@PostMapping("/test")
-	@Operation(summary = "Solution 생성 API 테스트")
-	public ResponseEntity<Object> test2(@RequestBody CreateSolutionRequest request){
+	@PostMapping()
+	@Operation(summary = "Solution 생성 AP")
+	public ResponseEntity<Object> createSolution(@Valid @RequestBody CreateSolutionRequest request){
 		solutionService.createSolution(request);
 		return ResponseEntity.ok().body("OK");
 	}
