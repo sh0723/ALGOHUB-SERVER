@@ -97,13 +97,13 @@ public class SolutionService {
 		log.info("code:"+request.code());
 	}
 
-    public JSONObject getSolutionInformation(@RequestParam String userId, @RequestParam Integer problemNumber, @RequestParam String submissionId) {
+    public JSONObject getSolutionInformation(@RequestParam String userName, @RequestParam Integer problemNumber, @RequestParam String submissionId) {
 		try {
 			// Python 스크립트 경로
 			String scriptPath = "src/main/resources/crawlProblem.py";
 
 			// ProcessBuilder를 사용하여 Python 스크립트 실행
-			ProcessBuilder pb = new ProcessBuilder("python", scriptPath, userId, String.valueOf(problemNumber), submissionId);
+			ProcessBuilder pb = new ProcessBuilder("python", scriptPath, userName, String.valueOf(problemNumber), submissionId);
 			pb.redirectErrorStream(true);
 			Process process = pb.start();
 
