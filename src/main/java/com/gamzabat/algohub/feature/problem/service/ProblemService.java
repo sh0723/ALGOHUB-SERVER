@@ -23,22 +23,22 @@ import com.gamzabat.algohub.feature.studygroup.repository.GroupMemberRepository;
 import com.gamzabat.algohub.feature.problem.repository.ProblemRepository;
 import com.gamzabat.algohub.feature.studygroup.repository.StudyGroupRepository;
 
-
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class ProblemService {
 	private final SolutionRepository solutionRepository;
 	private final ProblemRepository problemRepository;
 	private final StudyGroupRepository studyGroupRepository;
 	private final GroupMemberRepository groupMemberRepository;
+
+	@Transactional
 	public void createProblem(User user, CreateProblemRequest request) {
 		StudyGroup group = getGroup(request.groupId());
 
@@ -60,6 +60,7 @@ public class ProblemService {
 		log.info("success to create problem");
 	}
 
+	@Transactional
 	public void editProblem(User user, EditProblemRequest request) {
 		Problem problem = getProblem(request.problemId());
 		StudyGroup group = getGroup(problem.getStudyGroup().getId());
@@ -69,6 +70,7 @@ public class ProblemService {
 		log.info("success to edit problem deadline");
 	}
 
+	@Transactional(readOnly = true)
 	public List<GetProblemResponse> getProblemList(User user, Long groupId) {
 		StudyGroup group = getGroup(groupId);
 		if(!group.getOwner().getId().equals(user.getId())
@@ -104,6 +106,7 @@ public class ProblemService {
 		return list;
 	}
 
+	@Transactional
 	public void deleteProblem(User user, Long problemId) {
 		Problem problem = getProblem(problemId);
 		StudyGroup group = getGroup(problem.getStudyGroup().getId());
