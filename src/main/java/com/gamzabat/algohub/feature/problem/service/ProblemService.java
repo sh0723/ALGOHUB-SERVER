@@ -54,7 +54,8 @@ public class ProblemService {
 				.number(Integer.parseInt(number))
 				.title(title)
 				.level(level)
-			.deadline(request.deadline())
+			.startDate(request.startDate())
+			.endDate(request.endDate())
 			.build());
 
 		log.info("success to create problem");
@@ -66,7 +67,7 @@ public class ProblemService {
 		StudyGroup group = getGroup(problem.getStudyGroup().getId());
 		checkOwnerPermission(user, group, "edit");
 
-		problem.editDeadline(request.deadline());
+		problem.editProblemInfo(request.startDate(), request.endDate());
 		log.info("success to edit problem deadline");
 	}
 
@@ -83,7 +84,8 @@ public class ProblemService {
 			String title = problem.getTitle();
 			Long problemId = problem.getId();
 			String link = problem.getLink();
-			LocalDate deadline = problem.getDeadline();
+			LocalDate startDate = problem.getStartDate();
+			LocalDate endDate = problem.getEndDate();
 			Integer level = problem.getLevel();
 			Integer correctCount = solutionRepository.countDistinctUsersWithCorrectSolutionsByProblemId(problemId);
 			Integer submitMemberCount = solutionRepository.countDistinctUsersByProblemId(problemId);
@@ -99,7 +101,7 @@ public class ProblemService {
 				accurancy = TempAccurancy.intValue();
 			}
 
-			list.add(new GetProblemResponse(title,problemId,link,deadline,level,submitMemberCount,groupMemberCount,accurancy));
+			list.add(new GetProblemResponse(title,problemId,link,startDate,endDate,level,submitMemberCount,groupMemberCount,accurancy));
 		}
 
 		log.info("success to get problem list");

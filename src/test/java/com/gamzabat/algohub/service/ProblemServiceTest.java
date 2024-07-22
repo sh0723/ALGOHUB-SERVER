@@ -5,8 +5,11 @@ import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Field;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
+import com.gamzabat.algohub.feature.problem.dto.GetProblemResponse;
 import com.gamzabat.algohub.feature.problem.service.ProblemService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
 import com.gamzabat.algohub.feature.problem.domain.Problem;
+import com.gamzabat.algohub.feature.solution.repository.SolutionRepository;
 import com.gamzabat.algohub.feature.studygroup.domain.StudyGroup;
 import com.gamzabat.algohub.feature.user.domain.User;
 import com.gamzabat.algohub.feature.problem.dto.CreateProblemRequest;
@@ -41,6 +45,8 @@ class ProblemServiceTest {
 	private StudyGroupRepository groupRepository;
 	@Mock
 	private GroupMemberRepository groupMemberRepository;
+	@Mock
+	private SolutionRepository solutionRepository;
 
 	private User user;
 	private User user2;
@@ -56,7 +62,7 @@ class ProblemServiceTest {
 		user2 = User.builder().email("email2").password("password").nickname("nickname")
 			.role(Role.USER).profileImage("image").build();
 		group = StudyGroup.builder().name("name").owner(user).groupImage("imageUrl").groupCode("code").build();
-		problem = Problem.builder().studyGroup(group).link("link").deadline(LocalDate.now()).build();
+		problem = Problem.builder().studyGroup(group).link("link").startDate(LocalDate.now().minusDays(7)).endDate(LocalDate.now()).build();
 
 		Field userField = User.class.getDeclaredField("id");
 		userField.setAccessible(true);
@@ -79,7 +85,8 @@ class ProblemServiceTest {
 		CreateProblemRequest request = CreateProblemRequest.builder()
 			.groupId(10L)
 			.link("https://www.acmicpc.net/problem/1000")
-			.deadline(LocalDate.now())
+			.startDate(LocalDate.now().minusDays(7))
+			.endDate(LocalDate.now())
 			.build();
 		when(groupRepository.findById(10L)).thenReturn(Optional.ofNullable(group));
 		// when
@@ -92,7 +99,8 @@ class ProblemServiceTest {
 		assertThat(result.getNumber()).isEqualTo(1000);
 		assertThat(result.getTitle()).isEqualTo("A+B");
 		assertThat(result.getLevel()).isEqualTo(1);
-		assertThat(result.getDeadline()).isEqualTo(LocalDate.now());
+		assertThat(result.getStartDate()).isEqualTo(LocalDate.now().minusDays(7));
+		assertThat(result.getEndDate()).isEqualTo(LocalDate.now());
 	}
 
 	@Test
@@ -102,7 +110,8 @@ class ProblemServiceTest {
 		CreateProblemRequest request = CreateProblemRequest.builder()
 			.groupId(10L)
 			.link("link")
-			.deadline(LocalDate.now())
+			.startDate(LocalDate.now().minusDays(7))
+			.endDate(LocalDate.now())
 			.build();
 		when(groupRepository.findById(10L)).thenReturn(Optional.empty());
 		// when, then
@@ -118,7 +127,8 @@ class ProblemServiceTest {
 		CreateProblemRequest request = CreateProblemRequest.builder()
 			.groupId(10L)
 			.link("link")
-			.deadline(LocalDate.now())
+			.startDate(LocalDate.now().minusDays(7))
+			.endDate(LocalDate.now())
 			.build();
 		when(groupRepository.findById(10L)).thenReturn(Optional.ofNullable(group));
 		// when, then
@@ -129,28 +139,31 @@ class ProblemServiceTest {
 	}
 
 	@Test
-	@DisplayName("문제 마감 기한 수정 성공")
+	@DisplayName("문제 정보 수정 성공")
 	void editProblem(){
 		// given
 		EditProblemRequest request = EditProblemRequest.builder()
 			.problemId(20L)
-			.deadline(LocalDate.now().plusDays(3))
+			.startDate(LocalDate.now())
+			.endDate(LocalDate.now().plusDays(7))
 			.build();
 		when(problemRepository.findById(20L)).thenReturn(Optional.ofNullable(problem));
 		when(groupRepository.findById(10L)).thenReturn(Optional.ofNullable(group));
 		// when
 		problemService.editProblem(user,request);
 		// then
-		assertThat(problem.getDeadline()).isEqualTo(request.deadline());
+		assertThat(problem.getStartDate()).isEqualTo(request.startDate());
+		assertThat(problem.getEndDate()).isEqualTo(request.endDate());
 	}
 
 	@Test
-	@DisplayName("문제 마감 기한 수정 실패 : 존재하지 않는 그룹")
+	@DisplayName("문제 정보 수정 실패 : 존재하지 않는 그룹")
 	void editProblemFailed_1(){
 		// given
 		EditProblemRequest request = EditProblemRequest.builder()
 			.problemId(20L)
-			.deadline(LocalDate.now().plusDays(3))
+			.startDate(LocalDate.now())
+			.endDate(LocalDate.now().plusDays(7))
 			.build();
 		when(problemRepository.findById(20L)).thenReturn(Optional.ofNullable(problem));
 		when(groupRepository.findById(10L)).thenReturn(Optional.empty());
@@ -167,7 +180,8 @@ class ProblemServiceTest {
 		// given
 		EditProblemRequest request = EditProblemRequest.builder()
 			.problemId(20L)
-			.deadline(LocalDate.now().plusDays(3))
+			.startDate(LocalDate.now())
+			.endDate(LocalDate.now().plusDays(7))
 			.build();
 		when(problemRepository.findById(20L)).thenReturn(Optional.empty());
 		// when, then
@@ -178,12 +192,13 @@ class ProblemServiceTest {
 	}
 
 	@Test
-	@DisplayName("문제 마감 기한 수정 실패 : 권한 없음")
+	@DisplayName("문제 정보 수정 실패 : 권한 없음")
 	void editProblemFailed_3(){
 		// given
 		EditProblemRequest request = EditProblemRequest.builder()
 			.problemId(20L)
-			.deadline(LocalDate.now().plusDays(3))
+			.startDate(LocalDate.now())
+			.endDate(LocalDate.now().plusDays(7))
 			.build();
 		when(problemRepository.findById(20L)).thenReturn(Optional.ofNullable(problem));
 		when(groupRepository.findById(10L)).thenReturn(Optional.ofNullable(group));
@@ -194,33 +209,49 @@ class ProblemServiceTest {
 			.hasFieldOrPropertyWithValue("error","문제에 대한 권한이 없습니다. : edit");
 	}
 
-	// @Test
-	// @DisplayName("문제 목록 조회 성공")
-	// void getProblemList(){
-	// 	// given
-	// 	List<Problem> list = new ArrayList<>(30);
-	// 	for(int i=0; i<30; i++){
-	// 		list.add(Problem.builder()
-	// 			.studyGroup(group)
-	// 			.deadline(LocalDate.now().plusDays(i))
-	// 			.link("link"+i)
-	// 			.title("title"+i)
-	// 			.build());
-	// 	}
-	// 	when(groupRepository.findById(10L)).thenReturn(Optional.ofNullable(group));
-	// 	when(problemRepository.findAllByStudyGroup(group)).thenReturn(list);
-	// 	when(solutionRepository.countDistinctUsersWithCorrectSolutionsByProblemId(10L)).thenReturn(10);
-	// 	when(solutionRepository.countDistinctUsersByProblemId(10L)).thenReturn(20);
-	// 	// when
-	// 	List<GetProblemResponse> result = problemService.getProblemList(user, 10L);
-	// 	// then
-	// 	assertThat(result.size()).isEqualTo(30);
-	// 	// for(int i=0; i<30; i++){
-	// 	// 	assertThat(result.get(i).deadline()).isEqualTo(LocalDate.now().plusDays(i));
-	// 	// 	assertThat(result.get(i).link()).isEqualTo("link"+i);
-	// 	// 	assertThat(result.get(i).title()).isEqualTo("title"+i);
-	// 	// }
-	// }
+	@Test
+	@DisplayName("문제 목록 조회 성공")
+	void getProblemList() throws NoSuchFieldException, IllegalAccessException {
+		// given
+		Field problemField = Problem.class.getDeclaredField("id");
+		problemField.setAccessible(true);
+
+		List<Problem> list = new ArrayList<>(30);
+		for(int i=0; i<30; i++){
+			Problem problem = Problem.builder()
+				.studyGroup(group)
+				.startDate(LocalDate.now())
+				.endDate(LocalDate.now().plusDays(i))
+				.link("https://www.acmicpc.net/problem/32036"+i)
+				.title("title"+i)
+				.build();
+			list.add(problem);
+			problemField.set(problem,(long)i);
+			// 각 문제 ID에 대한 stub 설정
+			when(solutionRepository.countDistinctUsersWithCorrectSolutionsByProblemId((long)i)).thenReturn(8);
+			when(solutionRepository.countDistinctUsersByProblemId((long)i)).thenReturn(10);
+		}
+
+		when(groupRepository.findById(10L)).thenReturn(Optional.ofNullable(group));
+		when(problemRepository.findAllByStudyGroup(group)).thenReturn(list);
+		// 추가된 stub
+		when(groupMemberRepository.countMembersByStudyGroupId(10L)).thenReturn(20);
+
+		// when
+		List<GetProblemResponse> result = problemService.getProblemList(user, 10L);
+
+		// then
+		assertThat(result).hasSize(30);
+		for(int i=0; i<30; i++){
+			GetProblemResponse response = result.get(i);
+			assertThat(response.getStartDate()).isEqualTo(LocalDate.now());
+			assertThat(response.getEndDate()).isEqualTo(LocalDate.now().plusDays(i));
+			assertThat(response.getLink()).isEqualTo("https://www.acmicpc.net/problem/32036"+i);
+			assertThat(response.getTitle()).isEqualTo("title"+i);
+			assertThat(response.getSubmitMemberCount()).isEqualTo(10);
+			assertThat(response.getAccurancy()).isEqualTo(80);  // 8/10 * 100 = 80%
+		}
+	}
 
 	@Test
 	@DisplayName("문제 목록 조회 실패 : 존재하지 않는 그룹")
