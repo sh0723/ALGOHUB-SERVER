@@ -60,12 +60,12 @@ public class SolutionService {
 		return solutions.stream().map(GetSolutionResponse::toDTO).toList();
 	}
 	public void createSolution(CreateSolutionRequest request) {
-		Problem problem = problemRepository.findByNumber(request.problemNummber());
-//				.orElseThrow(() -> new ProblemValidationException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 문제 입니다."));
+		Problem problem = problemRepository.findByNumber(request.problemNumber())
+				.orElseThrow(() -> new ProblemValidationException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 문제 입니다."));
 		User user = userRepository.findByBjNickname(request.userName())
 				.orElseThrow(() -> new UserValidationException("존재하지 않는 유저 입니다."));
 
-		JSONObject solutionInformation = getSolutionInformation(request.userName(), request.problemNummber(), request.submissionId());
+		JSONObject solutionInformation = getSolutionInformation(request.userName(), request.problemNumber(), request.submissionId());
 
 		if (solutionInformation.isEmpty()) {
 			throw new ProblemValidationException(HttpStatus.NOT_FOUND.value(), "해당 제출 기록이 없습니다.");

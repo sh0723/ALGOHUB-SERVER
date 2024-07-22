@@ -12,6 +12,6 @@ import com.gamzabat.algohub.feature.studygroup.domain.StudyGroup;
 public interface ProblemRepository extends JpaRepository<Problem, Long> {
 	List<Problem> findAllByStudyGroup(StudyGroup studyGroup);
 	Problem getById(Long id);
-	Problem findByNumber(Integer Number);
+	Optional<Problem> findByNumber(Integer Number);
 
 }
