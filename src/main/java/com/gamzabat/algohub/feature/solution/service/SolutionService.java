@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.gamzabat.algohub.exception.StudyGroupValidationException;
 import com.gamzabat.algohub.exception.UserValidationException;
+import com.gamzabat.algohub.feature.comment.exception.SolutionValidationException;
 import com.gamzabat.algohub.feature.solution.domain.Solution;
 import com.gamzabat.algohub.feature.solution.dto.CreateSolutionRequest;
 import com.gamzabat.algohub.feature.solution.dto.GetSolutionResponse;
@@ -68,7 +69,7 @@ public class SolutionService {
 		JSONObject solutionInformation = getSolutionInformation(request.userName(), request.problemNumber(), request.submissionId());
 
 		if (solutionInformation.isEmpty()) {
-			throw new ProblemValidationException(HttpStatus.NOT_FOUND.value(), "해당 제출 기록이 없습니다.");
+			throw new SolutionValidationException("해당 제출 기록이 없습니다.");
 		}
 
 

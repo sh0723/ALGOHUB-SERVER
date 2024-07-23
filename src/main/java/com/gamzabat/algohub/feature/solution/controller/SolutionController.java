@@ -3,6 +3,7 @@ package com.gamzabat.algohub.feature.solution.controller;
 import java.util.List;
 
 import com.gamzabat.algohub.common.annotation.AuthedUser;
+import com.gamzabat.algohub.exception.RequestException;
 import com.gamzabat.algohub.feature.solution.dto.CreateSolutionRequest;
 import com.gamzabat.algohub.feature.solution.dto.GetSolutionResponse;
 import com.gamzabat.algohub.feature.solution.service.SolutionService;
@@ -11,6 +12,7 @@ import com.gamzabat.algohub.feature.user.domain.User;
 
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -37,14 +39,10 @@ public class SolutionController {
 	}
 
 	@PostMapping
-	@Operation(summary = "(사용X : extension 테스트 API)")
-	public ResponseEntity<Object> test(@RequestBody CreateSolutionRequest request){
-		solutionService.test(request);
-		return ResponseEntity.ok().body("OK");
-	}
-	@PostMapping()
-	@Operation(summary = "Solution 생성 AP")
-	public ResponseEntity<Object> createSolution(@Valid @RequestBody CreateSolutionRequest request){
+	@Operation(summary = "풀이 생성 API")
+	public ResponseEntity<Object> createSolution(@Valid @RequestBody CreateSolutionRequest request, Errors errors){
+		if(errors.hasErrors())
+			throw new RequestException("풀이 생성 요청이 올바르지 않습니다.",errors);
 		solutionService.createSolution(request);
 		return ResponseEntity.ok().body("OK");
 	}
