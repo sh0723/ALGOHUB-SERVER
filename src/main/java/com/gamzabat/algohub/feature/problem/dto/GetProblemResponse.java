@@ -9,18 +9,20 @@ public class GetProblemResponse {
 	private String title;
 	private Long problemId;
 	private String link;
-	private LocalDate deadline;
+	private LocalDate startDate;
+	private LocalDate endDate;
 	private Integer level;
 	private Integer submitMemberCount;
 	private Integer memberCount;
 	private Integer accurancy;
 
 
-	public GetProblemResponse(String title,Long problemId, String link, LocalDate deadline, Integer level, Integer submissionCount, Integer memberCount, Integer accurancy) {
+	public GetProblemResponse(String title,Long problemId, String link, LocalDate startDate, LocalDate endDate, Integer level, Integer submissionCount, Integer memberCount, Integer accurancy) {
 		this.title = title;
 		this.problemId = problemId;
 		this.link = link;
-		this.deadline = deadline;
+		this.startDate = startDate;
+		this.endDate = endDate;
 		this.level = level;
 		this.submitMemberCount = submissionCount;
 		this.memberCount = memberCount;

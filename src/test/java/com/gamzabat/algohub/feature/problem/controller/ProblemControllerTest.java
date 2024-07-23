@@ -79,7 +79,7 @@ class ProblemControllerTest {
 	@DisplayName("문제 생성 성공")
 	void createProblem() throws Exception {
 		// given
-		CreateProblemRequest request = CreateProblemRequest.builder().groupId(groupId).link("link").deadline(LocalDate.now()).build();
+		CreateProblemRequest request = CreateProblemRequest.builder().groupId(groupId).link("link").startDate(LocalDate.now().minusDays(7)).endDate(LocalDate.now()).build();
 		doNothing().when(problemService).createProblem(any(User.class),any(CreateProblemRequest.class));
 		// when, then
 		mockMvc.perform(post("/api/problem")
@@ -93,14 +93,15 @@ class ProblemControllerTest {
 
 	@ParameterizedTest
 	@CsvSource(value = {
-		"null,link,'2024-07-18',groupId : 그룹 고유 아이디는 필수 입력 입니다. ",
-		"1,'','2024-07-18',link : 문제 링크는 필수 입력 입니다.",
-		"1,link, null, deadline : 마감 기한은 필수 입력 입니다."
+		"null,link,'2024-07-10','2024-07-18',groupId : 그룹 고유 아이디는 필수 입력 입니다. ",
+		"1,'','2024-07-10','2024-07-18',link : 문제 링크는 필수 입력 입니다.",
+		"1,link, null, '2024-07-18', startDate : 시작 날짜는 필수 입력 입니다.",
+		"1,link, '2024-07-18', null, endDate : 마감 날짜는 필수 입력 입니다."
 	},nullValues = "null")
 	@DisplayName("문제 생성 실패 : 잘못된 요청")
-	void createProblemFailed_1(Long groupId, String link, LocalDate deadline, String exceptionMessage) throws Exception {
+	void createProblemFailed_1(Long groupId, String link, LocalDate startDate, LocalDate endDate, String exceptionMessage) throws Exception {
 		// given
-		CreateProblemRequest request = CreateProblemRequest.builder().groupId(groupId).link(link).deadline(deadline).build();
+		CreateProblemRequest request = CreateProblemRequest.builder().groupId(groupId).link(link).startDate(startDate).endDate(endDate).build();
 		// when, then
 		mockMvc.perform(post("/api/problem")
 				.header("Authorization",token)
@@ -115,7 +116,7 @@ class ProblemControllerTest {
 	@DisplayName("문제 생성 실패 : 권한 없음")
 	void createProblemFailed_2() throws Exception {
 		// given
-		CreateProblemRequest request = CreateProblemRequest.builder().groupId(groupId).link("link").deadline(LocalDate.now()).build();
+		CreateProblemRequest request = CreateProblemRequest.builder().groupId(groupId).link("link").startDate(LocalDate.now()).endDate(LocalDate.now()).build();
 		doThrow(new StudyGroupValidationException(HttpStatus.FORBIDDEN.value(), "문제에 대한 권한이 없습니다. : create")).when(problemService).createProblem(user,request);
 		// when, then
 		mockMvc.perform(post("/api/problem")
@@ -131,7 +132,7 @@ class ProblemControllerTest {
 	@DisplayName("문제 마감기한 수정 성공")
 	void editProblemDeadline() throws Exception {
 		// given
-		EditProblemRequest request = new EditProblemRequest(problemId, LocalDate.now().plusDays(10));
+		EditProblemRequest request = new EditProblemRequest(problemId,LocalDate.now(), LocalDate.now().plusDays(10));
 		doNothing().when(problemService).editProblem(any(User.class),any(EditProblemRequest.class));
 		// when, then
 		mockMvc.perform(patch("/api/problem")
@@ -145,13 +146,12 @@ class ProblemControllerTest {
 
 	@ParameterizedTest
 	@CsvSource(value = {
-		"null,'2024-08-21',problemId : 문제 고유 아이디는 필수 입력 입니다.",
-		"10, null, deadline : 마감 기한은 필수 입력 입니다."
+		"null,'2024-07-21','2024-08-21',problemId : 문제 고유 아이디는 필수 입력 입니다.",
 	},nullValues = "null")
 	@DisplayName("문제 마감기한 수정 실패 : 잘못된 요청")
-	void editProblemDeadlineFailed_1(Long problemId, LocalDate deadline, String exceptionMessage) throws Exception {
+	void editProblemDeadlineFailed_1(Long problemId, LocalDate startDate, LocalDate endDate, String exceptionMessage) throws Exception {
 		// given
-		EditProblemRequest request = new EditProblemRequest(problemId,deadline);
+		EditProblemRequest request = new EditProblemRequest(problemId,startDate,endDate);
 		// when, then
 		mockMvc.perform(patch("/api/problem")
 				.header("Authorization",token)
@@ -166,7 +166,7 @@ class ProblemControllerTest {
 	@DisplayName("문제 마감기한 수정 실패 : 존재하지 않는 문제")
 	void editProblemDeadlineFailed_2() throws Exception {
 		// given
-		EditProblemRequest request = new EditProblemRequest(problemId, LocalDate.now().plusDays(10));
+		EditProblemRequest request = new EditProblemRequest(problemId, LocalDate.now(), LocalDate.now().plusDays(10));
 		doThrow(new ProblemValidationException(HttpStatus.NOT_FOUND.value(),"존재하지 않는 문제 입니다.")).when(problemService).editProblem(any(User.class),any(EditProblemRequest.class));
 		// when, then
 		mockMvc.perform(patch("/api/problem")
