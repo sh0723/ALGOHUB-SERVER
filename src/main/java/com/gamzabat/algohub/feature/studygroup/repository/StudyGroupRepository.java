@@ -9,4 +9,5 @@ import com.gamzabat.algohub.feature.studygroup.repository.querydsl.CustomStudyGr
 
 public interface StudyGroupRepository extends JpaRepository<StudyGroup,Long>, CustomStudyGroupRepository {
 	Optional<StudyGroup> findByGroupCode(String groupCode);
+	Optional<StudyGroup> findById(Long id);
 }

@@ -61,10 +61,18 @@ public class SolutionService {
 		return solutions.stream().map(GetSolutionResponse::toDTO).toList();
 	}
 	public void createSolution(CreateSolutionRequest request) {
-		Problem problem = problemRepository.findByNumber(request.problemNumber())
-				.orElseThrow(() -> new ProblemValidationException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 문제 입니다."));
+		List<Problem> problems = problemRepository.findAllByNumber(request.problemNumber());
+		if (problems.isEmpty()) {
+			throw new ProblemValidationException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 문제 입니다.");
+		}
 		User user = userRepository.findByBjNickname(request.userName())
 				.orElseThrow(() -> new UserValidationException("존재하지 않는 유저 입니다."));
+		for(Problem problem : problems){
+			StudyGroup studyGroup = studyGroupRepository.findById(problem.getStudyGroup());
+
+
+		}
+
 
 		JSONObject solutionInformation = getSolutionInformation(request.userName(), request.problemNumber(), request.submissionId());
 
@@ -79,18 +87,21 @@ public class SolutionService {
 		int executionTime = parseIntegerSafely(solutionInformation.getString("time"));
 		int codeLength = parseIntegerSafely(solutionInformation.getString("codeLength"));
 
-		solutionRepository.save(Solution.builder()
-				.problem(problem)
-				.user(user)
-				.content(request.code())
-				.memoryUsage(memoryUsage)
-				.executionTime(executionTime)
-				.language(solutionInformation.getString("codeType"))
-				.codeLength(codeLength)
-				.isCorrect(solutionInformation.getString("result").equals("맞았습니다!!"))
-				.solvedDate(LocalDate.now())
-				.build()
-		);
+		for(Problem problem : problems) {
+			solutionRepository.save(Solution.builder()
+					.problem(problem)
+					.user(user)
+					.content(request.code())
+					.memoryUsage(memoryUsage)
+					.executionTime(executionTime)
+					.language(solutionInformation.getString("codeType"))
+					.codeLength(codeLength)
+					.isCorrect(solutionInformation.getString("result").equals("맞았습니다!!"))
+					.solvedDate(LocalDate.now())
+					.build()
+			);
+		}
+
 
 	}
 	public void test(CreateSolutionRequest request) {

@@ -178,8 +178,8 @@ public class ProblemService {
 			return "Error occurred";
 		}
 	}
-	private String getProblemId(CreateProblemRequest reuqest) {
-		String url = reuqest.link();
+	private String getProblemId(CreateProblemRequest request) {
+		String url = request.link();
 		String[] parts = url.split("/");
 		if(!parts[2].equals("www.acmicpc.net"))
 			throw new NotBojLinkException(HttpStatus.BAD_REQUEST.value(),"백준 링크가 아닙니다");
