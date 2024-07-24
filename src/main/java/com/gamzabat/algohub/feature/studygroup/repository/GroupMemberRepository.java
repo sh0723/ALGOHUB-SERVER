@@ -11,10 +11,13 @@ import com.gamzabat.algohub.feature.user.domain.User;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import javax.swing.*;
+
 public interface GroupMemberRepository extends JpaRepository<GroupMember, Long> {
 	boolean existsByUserAndStudyGroup(User user, StudyGroup studyGroup);
 	Optional<GroupMember> findByUserAndStudyGroup(User user, StudyGroup studyGroup);
 	List<GroupMember> findAllByStudyGroup(StudyGroup studyGroup);
 	@Query("SELECT COUNT(gm) FROM GroupMember gm WHERE gm.studyGroup.id = :studyGroupId")
 	Integer countMembersByStudyGroupId(@Param("studyGroupId") Long studyGroupId);
+	GroupMember findByUser(User user);
 }

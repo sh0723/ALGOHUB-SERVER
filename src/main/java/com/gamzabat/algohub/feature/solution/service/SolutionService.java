@@ -3,6 +3,7 @@ package com.gamzabat.algohub.feature.solution.service;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.time.LocalDate;
+import java.util.Iterator;
 import java.util.List;
 
 import com.gamzabat.algohub.exception.StudyGroupValidationException;
@@ -11,6 +12,7 @@ import com.gamzabat.algohub.feature.comment.exception.SolutionValidationExceptio
 import com.gamzabat.algohub.feature.solution.domain.Solution;
 import com.gamzabat.algohub.feature.solution.dto.CreateSolutionRequest;
 import com.gamzabat.algohub.feature.solution.dto.GetSolutionResponse;
+import com.gamzabat.algohub.feature.studygroup.domain.GroupMember;
 import com.gamzabat.algohub.feature.user.repository.UserRepository;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
@@ -65,14 +67,9 @@ public class SolutionService {
 		if (problems.isEmpty()) {
 			throw new ProblemValidationException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 문제 입니다.");
 		}
+
 		User user = userRepository.findByBjNickname(request.userName())
 				.orElseThrow(() -> new UserValidationException("존재하지 않는 유저 입니다."));
-		for(Problem problem : problems){
-			StudyGroup studyGroup = studyGroupRepository.findById(problem.getStudyGroup());
-
-
-		}
-
 
 		JSONObject solutionInformation = getSolutionInformation(request.userName(), request.problemNumber(), request.submissionId());
 
@@ -80,14 +77,22 @@ public class SolutionService {
 			throw new SolutionValidationException("해당 제출 기록이 없습니다.");
 		}
 
-
-
 		// 필드 값을 안전하게 변환
 		int memoryUsage = parseIntegerSafely(solutionInformation.getString("memory"));
 		int executionTime = parseIntegerSafely(solutionInformation.getString("time"));
 		int codeLength = parseIntegerSafely(solutionInformation.getString("codeLength"));
+		//
 
-		for(Problem problem : problems) {
+		Iterator<Problem> iterator = problems.iterator();
+
+		while (iterator.hasNext()) {
+			Problem problem = iterator.next();
+			StudyGroup studyGroup = problem.getStudyGroup(); // problem에 딸린 그룹 고유id 로 studyGroup 가져오기
+			if (studyGroup.getOwner() != user || groupMemberRepository.existsByUserAndStudyGroup(user, studyGroup)) {
+				iterator.remove();
+				continue;
+			}
+
 			solutionRepository.save(Solution.builder()
 					.problem(problem)
 					.user(user)
