@@ -2,6 +2,7 @@ package com.gamzabat.algohub.feature.solution.service;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.Iterator;
 import java.util.List;
@@ -12,7 +13,6 @@ import com.gamzabat.algohub.feature.comment.exception.SolutionValidationExceptio
 import com.gamzabat.algohub.feature.solution.domain.Solution;
 import com.gamzabat.algohub.feature.solution.dto.CreateSolutionRequest;
 import com.gamzabat.algohub.feature.solution.dto.GetSolutionResponse;
-import com.gamzabat.algohub.feature.studygroup.domain.GroupMember;
 import com.gamzabat.algohub.feature.user.repository.UserRepository;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
@@ -63,6 +63,7 @@ public class SolutionService {
 		return solutions.stream().map(GetSolutionResponse::toDTO).toList();
 	}
 	public void createSolution(CreateSolutionRequest request) {
+
 		List<Problem> problems = problemRepository.findAllByNumber(request.problemNumber());
 		if (problems.isEmpty()) {
 			throw new ProblemValidationException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 문제 입니다.");
@@ -73,7 +74,7 @@ public class SolutionService {
 
 		JSONObject solutionInformation = getSolutionInformation(request.userName(), request.problemNumber(), request.submissionId());
 
-		if (solutionInformation.isEmpty()) {
+		if (solutionInformation.isEmpty()||solutionInformation.getString("result").equals("제출 기록이 없습니다.")) {
 			throw new SolutionValidationException("해당 제출 기록이 없습니다.");
 		}
 
@@ -81,6 +82,7 @@ public class SolutionService {
 		int memoryUsage = parseIntegerSafely(solutionInformation.getString("memory"));
 		int executionTime = parseIntegerSafely(solutionInformation.getString("time"));
 		int codeLength = parseIntegerSafely(solutionInformation.getString("codeLength"));
+		boolean result = parseBooleanSafely(solutionInformation.getString("result"));
 		//
 
 		Iterator<Problem> iterator = problems.iterator();
@@ -92,7 +94,6 @@ public class SolutionService {
 				iterator.remove();
 				continue;
 			}
-
 			solutionRepository.save(Solution.builder()
 					.problem(problem)
 					.user(user)
@@ -101,12 +102,11 @@ public class SolutionService {
 					.executionTime(executionTime)
 					.language(solutionInformation.getString("codeType"))
 					.codeLength(codeLength)
-					.isCorrect(solutionInformation.getString("result").equals("맞았습니다!!"))
+					.isCorrect(result)
 					.solvedDate(LocalDate.now())
 					.build()
 			);
 		}
-
 
 	}
 	public void test(CreateSolutionRequest request) {
@@ -116,6 +116,7 @@ public class SolutionService {
 
     public JSONObject getSolutionInformation(@RequestParam String userName, @RequestParam Integer problemNumber, @RequestParam String submissionId) {
 		try {
+
 			// Python 스크립트 경로
 			String scriptPath = "src/main/resources/crawlProblem.py";
 
@@ -125,15 +126,22 @@ public class SolutionService {
 			Process process = pb.start();
 
 			// Python 스크립트의 출력을 읽어옵니다.
-			BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+			BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
 			StringBuilder output = new StringBuilder();
 			String line;
+
 			while ((line = reader.readLine()) != null) {
 				output.append(line);
 			}
 			process.waitFor();
 
+			// JSON 형식의 문자열을 반환합니다.
 			String outputString = output.toString().trim();
+
+			// JSON 문자열을 로그로 출력하여 확인합니다.
+			System.out.println("Output String: " + outputString);
+
+
 			return new JSONObject(outputString);
 
 
@@ -147,15 +155,16 @@ public class SolutionService {
 	private int parseIntegerSafely(String str) {
 		try {
 			if (str == null || str.trim().isEmpty()) {
-				return 0; // 기본값 설정 (또는 다른 적절한 기본값)
+				return 0; // 기본값 설정
 			}
 			return Integer.parseInt(str);
 		} catch (NumberFormatException e) {
-			// 변환 오류 발생 시 로그를 남기거나 기본값을 설정
-			System.err.println("숫자 형식 오류: " + str);
-			return 0; // 기본값 설정 (또는 다른 적절한 기본값)
+			return 0; // 기본값 설정
 		}
 	}
+	private boolean parseBooleanSafely(String result){
+		return "맞았습니다!!".equals(result.trim());
 
+	}
 
 }

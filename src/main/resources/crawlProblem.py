@@ -6,6 +6,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 import time
 import json
 import sys
+import io
 
 def searchProblem(userId, problemNumber, targetSubmissionId):
     # WebDriver 설정
@@ -67,6 +68,7 @@ def searchProblem(userId, problemNumber, targetSubmissionId):
         # 브라우저 닫기
         driver.quit()
 if __name__ == "__main__":
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
     userId = sys.argv[1]
     problemNumber = sys.argv[2]
     targetSubmissionId = sys.argv[3]
