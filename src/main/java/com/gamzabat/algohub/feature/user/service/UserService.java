@@ -13,6 +13,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.gamzabat.algohub.common.jwt.TokenProvider;
 import com.gamzabat.algohub.feature.user.domain.User;
@@ -20,13 +21,11 @@ import com.gamzabat.algohub.enums.Role;
 import com.gamzabat.algohub.exception.UserValidationException;
 import com.gamzabat.algohub.feature.user.repository.UserRepository;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class UserService {
 	private final UserRepository userRepository;
@@ -35,6 +34,7 @@ public class UserService {
 	private final TokenProvider tokenProvider;
 	private final AuthenticationManagerBuilder authManager;
 
+	@Transactional
 	public void register(RegisterRequest request, MultipartFile profileImage) {
 		checkEmailDuplication(request.email());
 		String imageUrl = imageService.saveImage(profileImage);
@@ -50,6 +50,7 @@ public class UserService {
 		log.info("success to register");
 	}
 
+	@Transactional(readOnly = true)
 	public SignInResponse signIn(SignInRequest request) {
 		UsernamePasswordAuthenticationToken authenticationToken
 			= new UsernamePasswordAuthenticationToken(request.email(),request.password());
@@ -69,10 +70,12 @@ public class UserService {
 	}
 
 
+	@Transactional(readOnly = true)
 	public UserInfoResponse userInfo(User user) {
 		return new UserInfoResponse(user.getEmail(), user.getNickname(),user.getProfileImage(), user.getBjNickname());
 	}
 
+	@Transactional
 	public void userUpdate(User user, UpdateUserRequest updateUserRequest, MultipartFile profileImage) {
 
 		if (profileImage != null && !profileImage.isEmpty()) {
@@ -92,6 +95,7 @@ public class UserService {
 		userRepository.save(user);
 	}
 
+	@Transactional
 	public void deleteUser( User user, DeleteUserRequest deleteUserRequest) {
 
 		if (!passwordEncoder.matches(deleteUserRequest.password(),user.getPassword()))
