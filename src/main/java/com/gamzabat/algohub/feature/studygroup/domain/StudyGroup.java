@@ -52,17 +52,11 @@ public class StudyGroup {
 		this.owner = owner;
 	}
 
-	public void editName(String name){this.name = name;}
-	public void editGroupImage(String groupImage){this.groupImage = groupImage;}
-
-	public void editStartDate(LocalDate startDate) {
+	public void editGroupInfo(String name, LocalDate startDate, LocalDate endDate, String introduction){
+		this.name = name;
 		this.startDate = startDate;
-	}
-	public void editEndDate(LocalDate endDate){
 		this.endDate = endDate;
-	}
-
-	public void editIntroduction(String introduction) {
 		this.introduction = introduction;
 	}
+	public void editGroupImage(String groupImage){this.groupImage = groupImage;}
 }
