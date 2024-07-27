@@ -18,6 +18,7 @@ import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+
 import com.gamzabat.algohub.feature.problem.domain.Problem;
 import com.gamzabat.algohub.feature.studygroup.domain.StudyGroup;
 import com.gamzabat.algohub.feature.studygroup.exception.GroupMemberValidationException;
@@ -62,6 +63,7 @@ public class SolutionService {
 		log.info("success to get solution list");
 		return solutions.stream().map(GetSolutionResponse::toDTO).toList();
 	}
+
 	public void createSolution(CreateSolutionRequest request) {
 
 		List<Problem> problems = problemRepository.findAllByNumber(request.problemNumber());
@@ -71,19 +73,6 @@ public class SolutionService {
 
 		User user = userRepository.findByBjNickname(request.userName())
 				.orElseThrow(() -> new UserValidationException("존재하지 않는 유저 입니다."));
-
-		JSONObject solutionInformation = getSolutionInformation(request.userName(), request.problemNumber(), request.submissionId());
-
-		if (solutionInformation.isEmpty()||solutionInformation.getString("result").equals("제출 기록이 없습니다.")) {
-			throw new SolutionValidationException("해당 제출 기록이 없습니다.");
-		}
-
-		// 필드 값을 안전하게 변환
-		int memoryUsage = parseIntegerSafely(solutionInformation.getString("memory"));
-		int executionTime = parseIntegerSafely(solutionInformation.getString("time"));
-		int codeLength = parseIntegerSafely(solutionInformation.getString("codeLength"));
-		boolean result = parseBooleanSafely(solutionInformation.getString("result"));
-		//
 
 		Iterator<Problem> iterator = problems.iterator();
 
@@ -98,11 +87,11 @@ public class SolutionService {
 					.problem(problem)
 					.user(user)
 					.content(request.code())
-					.memoryUsage(memoryUsage)
-					.executionTime(executionTime)
-					.language(solutionInformation.getString("codeType"))
-					.codeLength(codeLength)
-					.isCorrect(result)
+					.memoryUsage(request.memoryUsage())
+					.executionTime(request.executionTime())
+					.language(request.codeType())
+					.codeLength(request.codeLength())
+					.isCorrect(request.result().equals("맞았습니다!!")) // assuming "정답" means correct
 					.solvedDate(LocalDate.now())
 					.build()
 			);
@@ -114,54 +103,54 @@ public class SolutionService {
 		log.info("code:"+request.code());
 	}
 
-    public JSONObject getSolutionInformation(@RequestParam String userName, @RequestParam Integer problemNumber, @RequestParam String submissionId) {
-		try {
-
-			// Python 스크립트 경로
-			String scriptPath = "src/main/resources/crawlProblem.py";
-
-			// ProcessBuilder를 사용하여 Python 스크립트 실행
-			ProcessBuilder pb = new ProcessBuilder("python", scriptPath, userName, String.valueOf(problemNumber), submissionId);
-			pb.redirectErrorStream(true);
-			Process process = pb.start();
-
-			// Python 스크립트의 출력을 읽어옵니다.
-			BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
-			StringBuilder output = new StringBuilder();
-			String line;
-
-			while ((line = reader.readLine()) != null) {
-				output.append(line);
-			}
-			process.waitFor();
-
-			// JSON 형식의 문자열을 반환합니다.
-			String outputString = output.toString().trim();
-
-			// JSON 문자열을 로그로 출력하여 확인합니다.
-			System.out.println("Output String: " + outputString);
-
-
-			return new JSONObject(outputString);
-
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			// 예외 발생 시 빈 JSON 객체를 반환합니다.
-			return new JSONObject();
-		}
-    }
-
-	private int parseIntegerSafely(String str) {
-		try {
-			if (str == null || str.trim().isEmpty()) {
-				return 0; // 기본값 설정
-			}
-			return Integer.parseInt(str);
-		} catch (NumberFormatException e) {
-			return 0; // 기본값 설정
-		}
-	}
+//    public JSONObject getSolutionInformation(@RequestParam String userName, @RequestParam Integer problemNumber, @RequestParam String submissionId) {
+//		try {
+//
+//			// Python 스크립트 경로
+//			String scriptPath = "src/main/resources/crawlProblem.py";
+//
+//			// ProcessBuilder를 사용하여 Python 스크립트 실행
+//			ProcessBuilder pb = new ProcessBuilder("python", scriptPath, userName, String.valueOf(problemNumber), submissionId);
+//			pb.redirectErrorStream(true);
+//			Process process = pb.start();
+//
+//			// Python 스크립트의 출력을 읽어옵니다.
+//			BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
+//			StringBuilder output = new StringBuilder();
+//			String line;
+//
+//			while ((line = reader.readLine()) != null) {
+//				output.append(line);
+//			}
+//			process.waitFor();
+//
+//			// JSON 형식의 문자열을 반환합니다.
+//			String outputString = output.toString().trim();
+//
+//			// JSON 문자열을 로그로 출력하여 확인합니다.
+//			System.out.println("Output String: " + outputString);
+//
+//
+//			return new JSONObject(outputString);
+//
+//
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			// 예외 발생 시 빈 JSON 객체를 반환합니다.
+//			return new JSONObject();
+//		}
+//    }
+//
+//	private int parseIntegerSafely(String str) {
+//		try {
+//			if (str == null || str.trim().isEmpty()) {
+//				return 0; // 기본값 설정
+//			}
+//			return Integer.parseInt(str);
+//		} catch (NumberFormatException e) {
+//			return 0; // 기본값 설정
+//		}
+//	}
 	private boolean parseBooleanSafely(String result){
 		return "맞았습니다!!".equals(result.trim());
 
