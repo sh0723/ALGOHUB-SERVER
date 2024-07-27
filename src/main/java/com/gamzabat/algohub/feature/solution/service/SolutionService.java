@@ -15,6 +15,8 @@ import com.gamzabat.algohub.feature.solution.dto.CreateSolutionRequest;
 import com.gamzabat.algohub.feature.solution.dto.GetSolutionResponse;
 import com.gamzabat.algohub.feature.user.repository.UserRepository;
 import org.json.JSONObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -48,20 +50,22 @@ public class SolutionService {
 	private final GroupMemberRepository groupMemberRepository;
 	private final UserRepository userRepository;
 
-	public List<GetSolutionResponse> getSolutionList(User user, Long problemId) {
+	public Page<GetSolutionResponse> getSolutionList(User user, Long problemId, Pageable pageable) {
 		Problem problem = problemRepository.findById(problemId)
-			.orElseThrow(() -> new ProblemValidationException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 문제 입니다."));
+				.orElseThrow(() -> new ProblemValidationException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 문제 입니다."));
 
 		StudyGroup group = studyGroupRepository.findById(problem.getStudyGroup().getId())
-			.orElseThrow(() -> new StudyGroupValidationException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 그룹 입니다."));
+				.orElseThrow(() -> new StudyGroupValidationException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 그룹 입니다."));
 
 		if(!groupMemberRepository.existsByUserAndStudyGroup(user, group)
-			&& !group.getOwner().getId().equals(user.getId()))
+				&& !group.getOwner().getId().equals(user.getId())) {
 			throw new GroupMemberValidationException(HttpStatus.FORBIDDEN.value(),"참여하지 않은 그룹 입니다.");
+		}
 
-		List<Solution> solutions = solutionRepository.findAllByProblem(problem);
+		Page<Solution> solutions = solutionRepository.findAllByProblem(problem, pageable);
 		log.info("success to get solution list");
-		return solutions.stream().map(GetSolutionResponse::toDTO).toList();
+
+		return solutions.map(GetSolutionResponse::toDTO);
 	}
 
 	public void createSolution(CreateSolutionRequest request) {
