@@ -56,7 +56,7 @@ class SolutionServiceTest {
 		user2 = User.builder().email("email2").password("password").nickname("nickname")
 			.role(Role.USER).profileImage("profileImage").build();
 		group = StudyGroup.builder().name("name").owner(user).groupImage("imageUrl").groupCode("code").build();
-		problem = Problem.builder().studyGroup(group).link("link").deadline(LocalDate.now()).build();
+		problem = Problem.builder().studyGroup(group).link("link").startDate(LocalDate.now()).endDate(LocalDate.now()).build();
 
 		Field userField = User.class.getDeclaredField("id");
 		userField.setAccessible(true);
