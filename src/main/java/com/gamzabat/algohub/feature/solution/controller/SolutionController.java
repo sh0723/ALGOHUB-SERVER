@@ -11,6 +11,9 @@ import com.gamzabat.algohub.feature.user.domain.User;
 
 
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,10 +34,16 @@ import lombok.RequiredArgsConstructor;
 public class SolutionController {
 	private final SolutionService solutionService;
 
-	@GetMapping
+	@GetMapping("/solutions")
 	@Operation(summary = "풀이 조회 API", description = "특정 문제에 대한 풀이를 모두 조회하는 API")
-	public ResponseEntity<List<GetSolutionResponse>> getSolutionList(@AuthedUser User user, @RequestParam Long problemId){
-		List<GetSolutionResponse> response = solutionService.getSolutionList(user,problemId);
+	public ResponseEntity<Page<GetSolutionResponse>> getSolutionList(@AuthedUser User user,
+																	 @RequestParam Long problemId,
+																	 @RequestParam(defaultValue = "0") int page,
+																	 @RequestParam(defaultValue = "20") int size)
+
+	{
+		Pageable pageable = PageRequest.of(page,size);
+		Page<GetSolutionResponse> response = solutionService.getSolutionList(user, problemId, pageable);
 		return ResponseEntity.ok().body(response);
 	}
 

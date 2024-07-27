@@ -7,10 +7,12 @@ import java.util.List;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gamzabat.algohub.feature.problem.domain.Problem;
+import org.springframework.data.domain.Page;
 import com.gamzabat.algohub.feature.problem.dto.CreateProblemRequest;
 import com.gamzabat.algohub.feature.problem.dto.EditProblemRequest;
 import com.gamzabat.algohub.feature.problem.exception.NotBojLinkException;
 import com.gamzabat.algohub.feature.solution.repository.SolutionRepository;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 
@@ -72,15 +74,14 @@ public class ProblemService {
 	}
 
 	@Transactional(readOnly = true)
-	public List<GetProblemResponse> getProblemList(User user, Long groupId) {
+	public Page<GetProblemResponse> getProblemList(User user, Long groupId, Pageable pageable) {
 		StudyGroup group = getGroup(groupId);
 		if(!group.getOwner().getId().equals(user.getId())
 			&&!groupMemberRepository.existsByUserAndStudyGroup(user,group))
 			throw new ProblemValidationException(HttpStatus.FORBIDDEN.value(),"문제를 조회할 권한이 없습니다.");
 
-		List<Problem> problems = problemRepository.findAllByStudyGroup(group);
-		List<GetProblemResponse> list = new ArrayList<>();
-		for (Problem problem : problems) {
+		Page<Problem> problems = problemRepository.findAllByStudyGroup(group, pageable);
+		return problems.map(problem -> {
 			String title = problem.getTitle();
 			Long problemId = problem.getId();
 			String link = problem.getLink();
@@ -89,23 +90,19 @@ public class ProblemService {
 			Integer level = problem.getLevel();
 			Integer correctCount = solutionRepository.countDistinctUsersWithCorrectSolutionsByProblemId(problemId);
 			Integer submitMemberCount = solutionRepository.countDistinctUsersByProblemId(problemId);
-			Integer groupMemberCount= groupMemberRepository.countMembersByStudyGroupId(groupId);
-			Integer accurancy;
+			Integer groupMemberCount = groupMemberRepository.countMembersByStudyGroupId(groupId);
+			Integer accuracy;
 			if (submitMemberCount == 0) {
-				accurancy = 0;
-			}
-			else {
-				Double TempCorrectCount = correctCount.doubleValue();
-				Double TempSubmitMemberCount = submitMemberCount.doubleValue();
-				Double TempAccurancy = ((TempCorrectCount / TempSubmitMemberCount) * 100);
-				accurancy = TempAccurancy.intValue();
+				accuracy = 0;
+			} else {
+				Double tempCorrectCount = correctCount.doubleValue();
+				Double tempSubmitMemberCount = submitMemberCount.doubleValue();
+				Double tempAccuracy = ((tempCorrectCount / tempSubmitMemberCount) * 100);
+				accuracy = tempAccuracy.intValue();
 			}
 
-			list.add(new GetProblemResponse(title,problemId,link,startDate,endDate,level,submitMemberCount,groupMemberCount,accurancy));
-		}
-
-		log.info("success to get problem list");
-		return list;
+			return new GetProblemResponse(title, problemId, link, startDate, endDate, level, submitMemberCount, groupMemberCount, accuracy);
+		});
 	}
 
 	@Transactional
