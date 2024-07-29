@@ -20,6 +20,10 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 
 import com.gamzabat.algohub.feature.problem.domain.Problem;
@@ -213,6 +217,7 @@ class ProblemServiceTest {
 	@DisplayName("문제 목록 조회 성공")
 	void getProblemList() throws NoSuchFieldException, IllegalAccessException {
 		// given
+		Pageable pageable = PageRequest.of(0,20);
 		Field problemField = Problem.class.getDeclaredField("id");
 		problemField.setAccessible(true);
 
@@ -222,31 +227,30 @@ class ProblemServiceTest {
 				.studyGroup(group)
 				.startDate(LocalDate.now())
 				.endDate(LocalDate.now().plusDays(i))
-				.link("https://www.acmicpc.net/problem/32036"+i)
+				.link("https://www.acmicpc.net/problem/"+i)
 				.title("title"+i)
 				.build();
 			list.add(problem);
 			problemField.set(problem,(long)i);
-			// 각 문제 ID에 대한 stub 설정
-			when(solutionRepository.countDistinctUsersWithCorrectSolutionsByProblemId((long)i)).thenReturn(8);
-			when(solutionRepository.countDistinctUsersByProblemId((long)i)).thenReturn(10);
 		}
-
+		Page<Problem> problemPage = new PageImpl<>(list.subList(0,20),pageable,list.size());
 		when(groupRepository.findById(10L)).thenReturn(Optional.ofNullable(group));
-		when(problemRepository.findAllByStudyGroup(group)).thenReturn(list);
-		// 추가된 stub
-		when(groupMemberRepository.countMembersByStudyGroupId(10L)).thenReturn(20);
+		when(problemRepository.findAllByStudyGroup(eq(group),any(Pageable.class))).thenReturn(problemPage);
+		// 각 문제 ID에 대한 stub 설정
+		when(solutionRepository.countDistinctUsersWithCorrectSolutionsByProblemId(anyLong())).thenReturn(8);
+		when(solutionRepository.countDistinctUsersByProblemId(anyLong())).thenReturn(10);
 
 		// when
-		List<GetProblemResponse> result = problemService.getProblemList(user, 10L);
+		Page<GetProblemResponse> result = problemService.getProblemList(user, 10L,pageable);
 
 		// then
-		assertThat(result).hasSize(30);
-		for(int i=0; i<30; i++){
-			GetProblemResponse response = result.get(i);
+		assertThat(result.getContent().size()).isEqualTo(20);
+		assertThat(result.getTotalElements()).isEqualTo(30);
+		for(int i=0; i<result.getContent().size(); i++){
+			GetProblemResponse response = result.getContent().get(i);
 			assertThat(response.getStartDate()).isEqualTo(LocalDate.now());
 			assertThat(response.getEndDate()).isEqualTo(LocalDate.now().plusDays(i));
-			assertThat(response.getLink()).isEqualTo("https://www.acmicpc.net/problem/32036"+i);
+			assertThat(response.getLink()).isEqualTo("https://www.acmicpc.net/problem/"+i);
 			assertThat(response.getTitle()).isEqualTo("title"+i);
 			assertThat(response.getSubmitMemberCount()).isEqualTo(10);
 			assertThat(response.getAccurancy()).isEqualTo(80);  // 8/10 * 100 = 80%
@@ -259,7 +263,7 @@ class ProblemServiceTest {
 		// given
 		when(groupRepository.findById(10L)).thenReturn(Optional.empty());
 		// when, then
-		assertThatThrownBy(() -> problemService.getProblemList(user, 10L))
+		assertThatThrownBy(() -> problemService.getProblemList(user, 10L,any(Pageable.class)))
 			.isInstanceOf(StudyGroupValidationException.class)
 			.hasFieldOrPropertyWithValue("code",HttpStatus.NOT_FOUND.value())
 			.hasFieldOrPropertyWithValue("error","존재하지 않는 그룹 입니다.");
@@ -272,7 +276,7 @@ class ProblemServiceTest {
 		when(groupRepository.findById(10L)).thenReturn(Optional.ofNullable(group));
 		when(groupMemberRepository.existsByUserAndStudyGroup(user2,group)).thenReturn(false);
 		// when, then
-		assertThatThrownBy(() -> problemService.getProblemList(user2, 10L))
+		assertThatThrownBy(() -> problemService.getProblemList(user2, 10L,any(Pageable.class)))
 			.isInstanceOf(ProblemValidationException.class)
 			.hasFieldOrPropertyWithValue("code",HttpStatus.FORBIDDEN.value())
 			.hasFieldOrPropertyWithValue("error","문제를 조회할 권한이 없습니다.");
