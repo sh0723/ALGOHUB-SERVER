@@ -4,6 +4,8 @@
 
 	import com.gamzabat.algohub.feature.user.domain.User;
 	import com.gamzabat.algohub.feature.problem.domain.Problem;
+
+	import jakarta.persistence.Column;
 	import jakarta.persistence.Entity;
 	import jakarta.persistence.FetchType;
 	import jakarta.persistence.GeneratedValue;
@@ -30,6 +32,7 @@
 		private User user;
 
 		private LocalDate solvedDate;
+		@Column(columnDefinition = "TEXT")
 		private String content;
 		private boolean isCorrect;
 		private Integer memoryUsage;
