@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.gamzabat.algohub.common.annotation.AuthedUser;
+import com.gamzabat.algohub.feature.studygroup.dto.GetStudyGroupWithCodeResponse;
 import com.gamzabat.algohub.feature.user.domain.User;
 import com.gamzabat.algohub.feature.studygroup.dto.EditGroupRequest;
 import com.gamzabat.algohub.feature.studygroup.dto.GetStudyGroupResponse;
@@ -100,5 +101,11 @@ public class StudyGroupController {
 	@Operation(summary = "그룹 초대 코드 조회")
 	public ResponseEntity<Object> getGroupCode(@AuthedUser User user, @RequestParam Long groupId) {
 		return ResponseEntity.ok().body(studyGroupService.getGroupCode(user,groupId));
+	}
+
+	@GetMapping(value = "/{code}")
+	@Operation(summary = "그룹 코드를 사용한 그룹 정보 조회 API")
+	public ResponseEntity<GetStudyGroupWithCodeResponse> getGroupByCode(@PathVariable String code){
+		return ResponseEntity.ok().body(studyGroupService.getGroupByCode(code));
 	}
 }

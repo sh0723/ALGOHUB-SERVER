@@ -11,6 +11,7 @@ import com.gamzabat.algohub.feature.studygroup.dto.CheckSolvedProblemResponse;
 import com.gamzabat.algohub.feature.studygroup.dto.CreateGroupRequest;
 import com.gamzabat.algohub.feature.studygroup.dto.GetGroupMemberResponse;
 import com.gamzabat.algohub.feature.studygroup.dto.GetStudyGroupResponse;
+import com.gamzabat.algohub.feature.studygroup.dto.GetStudyGroupWithCodeResponse;
 import com.gamzabat.algohub.feature.studygroup.exception.CannotFoundGroupException;
 import com.gamzabat.algohub.feature.studygroup.exception.CannotFoundProblemException;
 import com.gamzabat.algohub.feature.studygroup.exception.GroupMemberValidationException;
@@ -183,5 +184,12 @@ public class StudyGroupService {
 			return studyGroup.getGroupCode();
 		else
 			throw new UserValidationException("코드를 조회할 권한이 없습니다.");
+	}
+
+	@Transactional(readOnly = true)
+	public GetStudyGroupWithCodeResponse getGroupByCode(String code) {
+		StudyGroup group = groupRepository.findByGroupCode(code)
+			.orElseThrow(() -> new CannotFoundGroupException("그룹을 찾을 수 없습니다."));
+		return GetStudyGroupWithCodeResponse.toDTO(group);
 	}
 }
