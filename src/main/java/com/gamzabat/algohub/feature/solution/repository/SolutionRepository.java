@@ -1,7 +1,5 @@
 package com.gamzabat.algohub.feature.solution.repository;
 
-import java.util.List;
-
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,4 +20,5 @@ public interface SolutionRepository extends JpaRepository<Solution,Long> {
 	@Query("SELECT COUNT(DISTINCT s.user) FROM Solution s WHERE s.problem.id = :problemId AND s.isCorrect = true")
 	Integer countDistinctUsersWithCorrectSolutionsByProblemId(@Param("problemId") Long problemId);
 
+	boolean existsByUserAndProblemAndIsCorrect(User user, Problem problem, boolean isCorrect);
 }

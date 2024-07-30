@@ -1,7 +1,6 @@
 package com.gamzabat.algohub.feature.problem.service;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -88,9 +87,10 @@ public class ProblemService {
 			LocalDate startDate = problem.getStartDate();
 			LocalDate endDate = problem.getEndDate();
 			Integer level = problem.getLevel();
+			boolean solved = solutionRepository.existsByUserAndProblemAndIsCorrect(user, problem, true);
 			Integer correctCount = solutionRepository.countDistinctUsersWithCorrectSolutionsByProblemId(problemId);
 			Integer submitMemberCount = solutionRepository.countDistinctUsersByProblemId(problemId);
-			Integer groupMemberCount = groupMemberRepository.countMembersByStudyGroupId(groupId);
+			Integer groupMemberCount = groupMemberRepository.countMembersByStudyGroupId(groupId)+1;
 			Integer accuracy;
 			if (submitMemberCount == 0) {
 				accuracy = 0;
@@ -101,7 +101,7 @@ public class ProblemService {
 				accuracy = tempAccuracy.intValue();
 			}
 
-			return new GetProblemResponse(title, problemId, link, startDate, endDate, level, submitMemberCount, groupMemberCount, accuracy);
+			return new GetProblemResponse(title, problemId, link, startDate, endDate, level, solved, submitMemberCount, groupMemberCount, accuracy);
 		});
 	}
 
@@ -115,6 +115,42 @@ public class ProblemService {
 		log.info("success to delete problem");
 	}
 
+	@Transactional(readOnly = true)
+	public List<GetProblemResponse> getDeadlineReachedProblemList(User user, Long groupId) {
+		StudyGroup group = getGroup(groupId);
+		if(!group.getOwner().getId().equals(user.getId())
+			&&!groupMemberRepository.existsByUserAndStudyGroup(user,group))
+			throw new ProblemValidationException(HttpStatus.FORBIDDEN.value(),"문제를 조회할 권한이 없습니다.");
+
+		List<Problem> problems = problemRepository.findAllByStudyGroupAndEndDate(group,LocalDate.now());
+		return problems.stream().map(problem -> {
+			Long problemId = problem.getId();
+			Integer correctCount = solutionRepository.countDistinctUsersWithCorrectSolutionsByProblemId(problemId);
+			Integer submitMemberCount = solutionRepository.countDistinctUsersByProblemId(problemId);
+			Integer groupMemberCount = groupMemberRepository.countMembersByStudyGroupId(groupId)+1;
+			Integer accuracy;
+			if (submitMemberCount == 0) {
+				accuracy = 0;
+			} else {
+				Double tempCorrectCount = correctCount.doubleValue();
+				Double tempSubmitMemberCount = submitMemberCount.doubleValue();
+				Double tempAccuracy = ((tempCorrectCount / tempSubmitMemberCount) * 100);
+				accuracy = tempAccuracy.intValue();
+			}
+			return new GetProblemResponse(
+				problem.getTitle(),
+				problemId,
+				problem.getLink(),
+				problem.getStartDate(),
+				problem.getEndDate(),
+				problem.getLevel(),
+				solutionRepository.existsByUserAndProblemAndIsCorrect(user, problem, true),
+				submitMemberCount,
+				groupMemberCount,
+				accuracy);
+		}).toList();
+	}
+
 	private Problem getProblem(Long problemId) {
 		return problemRepository.findById(problemId)
 			.orElseThrow(() -> new ProblemValidationException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 문제 입니다."));
@@ -124,7 +160,6 @@ public class ProblemService {
 		return studyGroupRepository.findById(id)
 			.orElseThrow(() -> new StudyGroupValidationException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 그룹 입니다."));
 	}
-
 	private static void checkOwnerPermission(User user, StudyGroup group, String permission) {
 		if(!group.getOwner().getId().equals(user.getId()))
 			throw new StudyGroupValidationException(HttpStatus.FORBIDDEN.value(), "문제에 대한 권한이 없습니다. : "+permission);
@@ -175,6 +210,7 @@ public class ProblemService {
 			return "Error occurred";
 		}
 	}
+
 	private String getProblemId(CreateProblemRequest request) {
 		String url = request.link();
 		String[] parts = url.split("/");

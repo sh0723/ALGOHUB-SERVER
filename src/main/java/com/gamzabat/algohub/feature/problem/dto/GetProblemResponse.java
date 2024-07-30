@@ -12,18 +12,19 @@ public class GetProblemResponse {
 	private LocalDate startDate;
 	private LocalDate endDate;
 	private Integer level;
+	private boolean solved;
 	private Integer submitMemberCount;
 	private Integer memberCount;
 	private Integer accurancy;
 
-
-	public GetProblemResponse(String title,Long problemId, String link, LocalDate startDate, LocalDate endDate, Integer level, Integer submissionCount, Integer memberCount, Integer accurancy) {
+	public GetProblemResponse(String title,Long problemId, String link, LocalDate startDate, LocalDate endDate, Integer level, boolean solved, Integer submissionCount, Integer memberCount, Integer accurancy) {
 		this.title = title;
 		this.problemId = problemId;
 		this.link = link;
 		this.startDate = startDate;
 		this.endDate = endDate;
 		this.level = level;
+		this.solved = solved;
 		this.submitMemberCount = submissionCount;
 		this.memberCount = memberCount;
 		this.accurancy = accurancy;
