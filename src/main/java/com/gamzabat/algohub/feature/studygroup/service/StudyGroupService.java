@@ -21,6 +21,7 @@ import com.gamzabat.algohub.feature.image.service.ImageService;
 import com.gamzabat.algohub.feature.user.domain.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
@@ -28,13 +29,11 @@ import com.gamzabat.algohub.feature.studygroup.dto.EditGroupRequest;
 import com.gamzabat.algohub.feature.studygroup.repository.GroupMemberRepository;
 import com.gamzabat.algohub.feature.studygroup.repository.StudyGroupRepository;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class StudyGroupService {
 	private final StudyGroupRepository groupRepository;
@@ -43,6 +42,7 @@ public class StudyGroupService {
 	private final SolutionRepository solutionRepository;
 	private final ProblemRepository problemRepository;
 
+	@Transactional
 	public void createGroup(User user, CreateGroupRequest request, MultipartFile profileImage) {
 		String imageUrl = imageService.saveImage(profileImage);
 		groupRepository.save(StudyGroup.builder()
@@ -57,6 +57,7 @@ public class StudyGroupService {
 		log.info("success to save study group");
 	}
 
+	@Transactional
 	public void joinGroupWithCode(User user, String code) {
 		StudyGroup studyGroup = groupRepository.findByGroupCode(code)
 			.orElseThrow(() -> new StudyGroupValidationException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 그룹 입니다."));
@@ -75,6 +76,7 @@ public class StudyGroupService {
 		log.info("success to join study group");
 	}
 
+	@Transactional
 	public void deleteGroup(User user, Long groupId) {
 		StudyGroup studyGroup = groupRepository.findById(groupId)
 			.orElseThrow(() -> new StudyGroupValidationException(HttpStatus.NOT_FOUND.value(),"존재하지 않는 그룹 입니다."));
@@ -90,6 +92,7 @@ public class StudyGroupService {
 		log.info("success to delete(exit) study group");
 	}
 
+	@Transactional(readOnly = true)
 	public List<GetStudyGroupResponse> getStudyGroupList(User user) {
 		List<StudyGroup> groups = groupRepository.findByUser(user);
 		List<GetStudyGroupResponse> list = groups.stream()
@@ -98,29 +101,29 @@ public class StudyGroupService {
 		return list;
 	}
 
+	@Transactional
 	public void editGroup(User user, EditGroupRequest request, MultipartFile groupImage) {
 		StudyGroup group = groupRepository.findById(request.id())
 			.orElseThrow(() -> new StudyGroupValidationException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 그룹 입니다."));
 		if(!group.getOwner().getId().equals(user.getId()))
 			throw new StudyGroupValidationException(HttpStatus.FORBIDDEN.value(), "그룹 정보 수정에 대한 권한이 없습니다.");
 
-		if(request.name() != null && !request.name().equals(group.getName()))
-			group.editName(request.name());
-		if (request.startDate() != null)
-			group.editStartDate(request.startDate());
-		if (request.endDate() != null)
-			group.editEndDate(request.endDate());
-		if (request.introduction() != null)
-			group.editIntroduction(request.introduction());
 		if(groupImage != null){
 			if(group.getGroupImage() != null)
 				imageService.deleteImage(group.getGroupImage());
 			String imageUrl = imageService.saveImage(groupImage);
 			group.editGroupImage(imageUrl);
 		}
+		group.editGroupInfo(
+			request.name(),
+			request.startDate(),
+			request.endDate(),
+			request.introduction()
+		);
 		log.info("success to edit group info");
 	}
 
+	@Transactional(readOnly = true)
 	public List<GetGroupMemberResponse> groupInfo(User user, Long id) {
 		StudyGroup group = groupRepository.findById(id)
 				.orElseThrow(() -> new CannotFoundGroupException("그룹을 찾을 수 없습니다."));
@@ -145,6 +148,7 @@ public class StudyGroupService {
 		}
 	}
 
+	@Transactional(readOnly = true)
 	public List<CheckSolvedProblemResponse> getChekingSolvedProblem(User user, Long problemId) {
 		Problem problem = problemRepository.findById(problemId)
 				.orElseThrow(() -> new CannotFoundProblemException("문제를 찾을 수 없습니다."));
@@ -159,14 +163,7 @@ public class StudyGroupService {
 				String profileImage = groupMember.getUser().getProfileImage();
 				Long groupMemberId = groupMember.getUser().getId();
 				String nickname = groupMember.getUser().getNickname();
-
-				Boolean solved;
-				if (solutionRepository.existsByUserAndProblem(groupMember.getUser(), problem))
-					solved = true;
-				else
-					solved = false;
-
-
+				Boolean solved = solutionRepository.existsByUserAndProblem(groupMember.getUser(), problem);
 				responseList.add(new CheckSolvedProblemResponse(groupMemberId, profileImage, nickname, solved));
 			}
 
@@ -177,6 +174,7 @@ public class StudyGroupService {
 		}
 	}
 
+	@Transactional(readOnly = true)
 	public String getGroupCode(User user, Long groupId) {
 		StudyGroup studyGroup = groupRepository.findById(groupId)
 				.orElseThrow(() -> new CannotFoundGroupException("그룹을 찾지 못했습니다."));

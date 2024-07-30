@@ -5,6 +5,9 @@ import java.util.List;
 import com.gamzabat.algohub.feature.problem.dto.CreateProblemRequest;
 import com.gamzabat.algohub.feature.problem.dto.EditProblemRequest;
 import com.gamzabat.algohub.feature.problem.service.ProblemService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -55,9 +58,13 @@ public class ProblemController {
 	}
 
 	@GetMapping
-	@Operation(summary = "문제 목록 조회 API", description = "그룹 하나에 대해 모든 문제를 조회하는 API")
-	public ResponseEntity<List<GetProblemResponse>> getProblemList(@AuthedUser User user, @RequestParam Long groupId){
-		List<GetProblemResponse> response = problemService.getProblemList(user, groupId);
+	@Operation(summary = "문제 조회 API", description = "특정 그룹에 대한 문제를 모두 조회하는 API")
+	public ResponseEntity<Page<GetProblemResponse>> getProblemList(@AuthedUser User user,
+																   @RequestParam Long groupId,
+																   @RequestParam(defaultValue = "0") int page,
+																   @RequestParam(defaultValue = "20") int size) {
+		Pageable pageable = PageRequest.of(page,size);
+		Page<GetProblemResponse> response = problemService.getProblemList(user, groupId, pageable);
 		return ResponseEntity.ok().body(response);
 	}
 

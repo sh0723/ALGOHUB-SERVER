@@ -12,6 +12,7 @@ import java.util.Optional;
 
 import com.gamzabat.algohub.exception.StudyGroupValidationException;
 import com.gamzabat.algohub.feature.solution.service.SolutionService;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,6 +20,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 
 import com.gamzabat.algohub.feature.problem.domain.Problem;
@@ -56,7 +61,7 @@ class SolutionServiceTest {
 		user2 = User.builder().email("email2").password("password").nickname("nickname")
 			.role(Role.USER).profileImage("profileImage").build();
 		group = StudyGroup.builder().name("name").owner(user).groupImage("imageUrl").groupCode("code").build();
-		problem = Problem.builder().studyGroup(group).link("link").deadline(LocalDate.now()).build();
+		problem = Problem.builder().studyGroup(group).link("link").startDate(LocalDate.now()).endDate(LocalDate.now()).build();
 
 		Field userField = User.class.getDeclaredField("id");
 		userField.setAccessible(true);
@@ -76,7 +81,8 @@ class SolutionServiceTest {
 	@DisplayName("풀이 목록 조회 성공 (주인)")
 	void getSolutionList() {
 		// given
-		List<Solution> list = new ArrayList<>(30);
+		Pageable pageable = PageRequest.of(0,20);
+		List<Solution> list = new ArrayList<>();
 		for(int i=0; i<30; i++) {
 			list.add(Solution.builder()
 				.problem(problem)
@@ -89,21 +95,24 @@ class SolutionServiceTest {
 					.codeLength(i)
 				.build());
 		}
+		Page<Solution> solutionPage = new PageImpl<>(list.subList(0,20), pageable, list.size());
+
 		when(studyGroupRepository.findById(30L)).thenReturn(Optional.ofNullable(group));
 		when(problemRepository.findById(10L)).thenReturn(Optional.ofNullable(problem));
-		when(solutionRepository.findAllByProblem(problem)).thenReturn(list);
+		when(solutionRepository.findAllByProblem(eq(problem), any(Pageable.class))).thenReturn(solutionPage);
 		// when
-		List<GetSolutionResponse> result = solutionService.getSolutionList(user,10L);
+		Page<GetSolutionResponse> result = solutionService.getSolutionList(user,10L,pageable);
 		// then
-		assertThat(result.size()).isEqualTo(30);
-		for(int i=0; i<30; i++){
-			assertThat(result.get(i).content()).isEqualTo("content"+i);
-			assertThat(result.get(i).memoryUsage()).isEqualTo(i);
-			assertThat(result.get(i).executionTime()).isEqualTo(i);
-			assertThat(result.get(i).nickname()).isEqualTo("nickname");
-			assertThat(result.get(i).profileImage()).isEqualTo("profileImage");
-			assertThat(result.get(i).language()).isEqualTo("Java"+i);
-			assertThat(result.get(i).codeLength()).isEqualTo(i);
+		assertThat(result.getContent().size()).isEqualTo(20);
+		assertThat(result.getTotalElements()).isEqualTo(30);
+		for(int i=0; i<result.getContent().size(); i++){
+			assertThat(result.getContent().get(i).content()).isEqualTo("content"+i);
+			assertThat(result.getContent().get(i).memoryUsage()).isEqualTo(i);
+			assertThat(result.getContent().get(i).executionTime()).isEqualTo(i);
+			assertThat(result.getContent().get(i).nickname()).isEqualTo("nickname");
+			assertThat(result.getContent().get(i).profileImage()).isEqualTo("profileImage");
+			assertThat(result.getContent().get(i).language()).isEqualTo("Java"+i);
+			assertThat(result.getContent().get(i).codeLength()).isEqualTo(i);
 		}
 	}
 
@@ -111,7 +120,8 @@ class SolutionServiceTest {
 	@DisplayName("풀이 목록 조회 성공 (멤버)")
 	void getSolutionList_2() {
 		// given
-		List<Solution> list = new ArrayList<>(30);
+		Pageable pageable = PageRequest.of(0,20);
+		List<Solution> list = new ArrayList<>();
 		for(int i=0; i<30; i++) {
 			list.add(Solution.builder()
 				.problem(problem)
@@ -124,22 +134,25 @@ class SolutionServiceTest {
 				.codeLength(i)
 				.build());
 		}
+		Page<Solution> solutionPage = new PageImpl<>(list.subList(0,20), pageable, list.size());
+
 		when(studyGroupRepository.findById(30L)).thenReturn(Optional.ofNullable(group));
 		when(problemRepository.findById(10L)).thenReturn(Optional.ofNullable(problem));
-		when(solutionRepository.findAllByProblem(problem)).thenReturn(list);
+		when(solutionRepository.findAllByProblem(eq(problem), any(Pageable.class))).thenReturn(solutionPage);
 		when(groupMemberRepository.existsByUserAndStudyGroup(user2,group)).thenReturn(true);
 		// when
-		List<GetSolutionResponse> result = solutionService.getSolutionList(user2,10L);
+		Page<GetSolutionResponse> result = solutionService.getSolutionList(user2,10L,pageable);
 		// then
-		assertThat(result.size()).isEqualTo(30);
-		for(int i=0; i<30; i++){
-			assertThat(result.get(i).content()).isEqualTo("content"+i);
-			assertThat(result.get(i).memoryUsage()).isEqualTo(i);
-			assertThat(result.get(i).executionTime()).isEqualTo(i);
-			assertThat(result.get(i).nickname()).isEqualTo("nickname");
-			assertThat(result.get(i).profileImage()).isEqualTo("profileImage");
-			assertThat(result.get(i).language()).isEqualTo("Java"+i);
-			assertThat(result.get(i).codeLength()).isEqualTo(i);
+		assertThat(result.getContent().size()).isEqualTo(20);
+		assertThat(result.getTotalElements()).isEqualTo(30);
+		for(int i=0; i<result.getContent().size(); i++){
+			assertThat(result.getContent().get(i).content()).isEqualTo("content"+i);
+			assertThat(result.getContent().get(i).memoryUsage()).isEqualTo(i);
+			assertThat(result.getContent().get(i).executionTime()).isEqualTo(i);
+			assertThat(result.getContent().get(i).nickname()).isEqualTo("nickname");
+			assertThat(result.getContent().get(i).profileImage()).isEqualTo("profileImage");
+			assertThat(result.getContent().get(i).language()).isEqualTo("Java"+i);
+			assertThat(result.getContent().get(i).codeLength()).isEqualTo(i);
 		}
 	}
 
@@ -147,10 +160,11 @@ class SolutionServiceTest {
 	@DisplayName("풀이 목록 조회 실패 : 존재하지 않는 그룹")
 	void getSolutionListFailed_1(){
 		// given
+		Pageable pageable = PageRequest.of(0,20);
 		when(problemRepository.findById(10L)).thenReturn(Optional.ofNullable(problem));
 		when(studyGroupRepository.findById(30L)).thenReturn(Optional.empty());
 		// when, then
-		assertThatThrownBy(() -> solutionService.getSolutionList(user,10L))
+		assertThatThrownBy(() -> solutionService.getSolutionList(user,10L, pageable))
 			.isInstanceOf(StudyGroupValidationException.class)
 			.hasFieldOrPropertyWithValue("code",HttpStatus.NOT_FOUND.value())
 			.hasFieldOrPropertyWithValue("error","존재하지 않는 그룹 입니다.");
@@ -160,9 +174,10 @@ class SolutionServiceTest {
 	@DisplayName("풀이 목록 조회 실패 : 존재하지 않는 문제")
 	void getSolutionListFailed_2(){
 		// given
+		Pageable pageable = PageRequest.of(0,20);
 		when(problemRepository.findById(10L)).thenReturn(Optional.empty());
 		// when, then
-		assertThatThrownBy(() -> solutionService.getSolutionList(user,10L))
+		assertThatThrownBy(() -> solutionService.getSolutionList(user,10L,pageable))
 			.isInstanceOf(ProblemValidationException.class)
 			.hasFieldOrPropertyWithValue("code", HttpStatus.NOT_FOUND.value())
 			.hasFieldOrPropertyWithValue("error","존재하지 않는 문제 입니다.");
@@ -172,11 +187,12 @@ class SolutionServiceTest {
 	@DisplayName("풀이 목록 조회 실패 : 참여하지 않은 그룹")
 	void getSolutionListFailed_3(){
 		// given
+		Pageable pageable = PageRequest.of(0,20);
 		when(problemRepository.findById(10L)).thenReturn(Optional.ofNullable(problem));
 		when(studyGroupRepository.findById(30L)).thenReturn(Optional.ofNullable(group));
 		when(groupMemberRepository.existsByUserAndStudyGroup(user2,group)).thenReturn(false);
 		// when, then
-		assertThatThrownBy(() -> solutionService.getSolutionList(user2,10L))
+		assertThatThrownBy(() -> solutionService.getSolutionList(user2,10L, pageable))
 			.isInstanceOf(GroupMemberValidationException.class)
 			.hasFieldOrPropertyWithValue("code", HttpStatus.FORBIDDEN.value())
 			.hasFieldOrPropertyWithValue("error","참여하지 않은 그룹 입니다.");

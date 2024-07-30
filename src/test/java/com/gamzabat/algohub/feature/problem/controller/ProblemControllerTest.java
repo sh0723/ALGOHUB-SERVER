@@ -8,7 +8,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -20,6 +19,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -182,29 +185,31 @@ class ProblemControllerTest {
 	@DisplayName("문제 목록 조회 성공")
 	void getProblemList() throws Exception {
 		// given
-		List<GetProblemResponse> response = new ArrayList<>(30);
-		when(problemService.getProblemList(any(User.class),anyLong())).thenReturn(response);
+		Pageable pageable = PageRequest.of(0,20);
+		Page<GetProblemResponse> response = new PageImpl<>(new ArrayList<>(30));
+		when(problemService.getProblemList(any(User.class),anyLong(),any(Pageable.class))).thenReturn(response);
 		// when, then
 		mockMvc.perform(get("/api/problem")
 				.header("Authorization",token)
 				.param("groupId",String.valueOf(groupId)))
 			.andExpect(status().isOk())
 			.andExpect(content().string(objectMapper.writeValueAsString(response)));
-		verify(problemService,times(1)).getProblemList(user,groupId);
+		verify(problemService,times(1)).getProblemList(user,groupId,pageable);
 	}
 
 	@Test
 	@DisplayName("문제 목록 조회 실패 : 권한 없음")
 	void getProblemListFailed_1() throws Exception {
 		// given
-		when(problemService.getProblemList(any(User.class),anyLong())).thenThrow(new ProblemValidationException(HttpStatus.FORBIDDEN.value(),"문제를 조회할 권한이 없습니다."));
+		Pageable pageable = PageRequest.of(0,20);
+		when(problemService.getProblemList(any(User.class),anyLong(),any(Pageable.class))).thenThrow(new ProblemValidationException(HttpStatus.FORBIDDEN.value(),"문제를 조회할 권한이 없습니다."));
 		// when, then
 		mockMvc.perform(get("/api/problem")
 				.header("Authorization",token)
 				.param("groupId",String.valueOf(groupId)))
 			.andExpect(status().isForbidden())
 			.andExpect(jsonPath("$.error").value("문제를 조회할 권한이 없습니다."));
-		verify(problemService,times(1)).getProblemList(user,groupId);
+		verify(problemService,times(1)).getProblemList(user,groupId,pageable);
 	}
 
 	@Test

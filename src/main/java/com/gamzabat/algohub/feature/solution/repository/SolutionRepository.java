@@ -2,6 +2,8 @@ package com.gamzabat.algohub.feature.solution.repository;
 
 import java.util.List;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.gamzabat.algohub.feature.problem.domain.Problem;
@@ -11,7 +13,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface SolutionRepository extends JpaRepository<Solution,Long> {
-	List<Solution> findAllByProblem(Problem problem);
+	Page<Solution> findAllByProblem(Problem problem, Pageable pageable);
 	Boolean existsByUserAndProblem(User user, Problem problem);
 
 	@Query("SELECT COUNT(DISTINCT s.user) FROM Solution s WHERE s.problem.id = :problemId")
