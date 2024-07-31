@@ -13,7 +13,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface SolutionRepository extends JpaRepository<Solution,Long> {
-	Page<Solution> findAllByProblem(Problem problem, Pageable pageable);
+	Page<Solution> findAllByProblemOrderBySolvedDateTimeDesc(Problem problem, Pageable pageable);
 	Boolean existsByUserAndProblem(User user, Problem problem);
 
 	@Query("SELECT COUNT(DISTINCT s.user) FROM Solution s WHERE s.problem.id = :problemId")

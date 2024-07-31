@@ -1,6 +1,7 @@
 	package com.gamzabat.algohub.feature.solution.domain;
 
 	import java.time.LocalDate;
+	import java.time.LocalDateTime;
 
 	import com.gamzabat.algohub.feature.user.domain.User;
 	import com.gamzabat.algohub.feature.problem.domain.Problem;
@@ -30,6 +31,7 @@
 		private User user;
 
 		private LocalDate solvedDate;
+		private LocalDateTime solvedDateTime;
 		private String content;
 		private boolean isCorrect;
 		private Integer memoryUsage;
@@ -39,16 +41,21 @@
 
 
 		@Builder
-		public Solution(Problem problem, User user, LocalDate solvedDate, String content, boolean isCorrect,
+		public Solution(Problem problem, User user, LocalDate solvedDate,LocalDateTime solvedDateTime, String content, boolean isCorrect,
 						Integer memoryUsage, Integer executionTime, String language, Integer codeLength) {
 			this.problem = problem;
 			this.user = user;
-			this.solvedDate = solvedDate;        //??
+			this.solvedDate = solvedDate;
+			this.solvedDateTime = solvedDateTime;        //??
 			this.content = content;                //??
 			this.isCorrect = isCorrect;            //정답 여부
 			this.memoryUsage = memoryUsage;    //메모리
 			this.executionTime = executionTime; //시간
 			this.language = language;            //사용 언어
 			this.codeLength = codeLength;        //코드 길이
+		}
+
+		public LocalDateTime getSolvedDateTime() {
+			return solvedDateTime;
 		}
 	}
