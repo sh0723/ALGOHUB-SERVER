@@ -3,15 +3,13 @@ package com.gamzabat.algohub.feature.studygroup.service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import com.gamzabat.algohub.feature.problem.domain.Problem;
 import com.gamzabat.algohub.feature.studygroup.domain.GroupMember;
 import com.gamzabat.algohub.feature.studygroup.domain.StudyGroup;
-import com.gamzabat.algohub.feature.studygroup.dto.CheckSolvedProblemResponse;
-import com.gamzabat.algohub.feature.studygroup.dto.CreateGroupRequest;
-import com.gamzabat.algohub.feature.studygroup.dto.GetGroupMemberResponse;
-import com.gamzabat.algohub.feature.studygroup.dto.GetStudyGroupResponse;
-import com.gamzabat.algohub.feature.studygroup.dto.GetStudyGroupWithCodeResponse;
+import com.gamzabat.algohub.feature.studygroup.dto.*;
 import com.gamzabat.algohub.feature.studygroup.exception.CannotFoundGroupException;
 import com.gamzabat.algohub.feature.studygroup.exception.CannotFoundProblemException;
 import com.gamzabat.algohub.feature.studygroup.exception.GroupMemberValidationException;
@@ -26,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
-import com.gamzabat.algohub.feature.studygroup.dto.EditGroupRequest;
 import com.gamzabat.algohub.feature.studygroup.repository.GroupMemberRepository;
 import com.gamzabat.algohub.feature.studygroup.repository.StudyGroupRepository;
 
@@ -191,5 +188,24 @@ public class StudyGroupService {
 		StudyGroup group = groupRepository.findByGroupCode(code)
 			.orElseThrow(() -> new CannotFoundGroupException("그룹을 찾을 수 없습니다."));
 		return GetStudyGroupWithCodeResponse.toDTO(group);
+	}
+
+	@Transactional(readOnly = true)
+	public List<GetRankingResponse> getRank(User user, Long groupId) {
+
+		StudyGroup group = groupRepository.findById(groupId).orElseThrow(() -> new CannotFoundGroupException("그룹을 찾을 수 없습니다."));
+
+		if (!(groupMemberRepository.existsByUserAndStudyGroup(user, group) || group.getOwner().getId().equals(user.getId()))) {
+			throw new UserValidationException("랭킹을 확인할 권한이 없습니다.");
+		}
+
+		List<GetRankingResponse> rankingResponses = solutionRepository.findTopUsersByGroup(group);
+		return IntStream.range(0, rankingResponses.size())
+				.mapToObj(i -> {
+					GetRankingResponse response = rankingResponses.get(i);
+					return new GetRankingResponse(response.getUserNickname(), response.getProfileImage(), i + 1, response.getSolvedCount());
+				})
+				.limit(3)
+				.collect(Collectors.toList());
 	}
 }

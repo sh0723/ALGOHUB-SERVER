@@ -2,9 +2,7 @@ package com.gamzabat.algohub.feature.studygroup.controller;
 
 import java.util.List;
 
-import com.gamzabat.algohub.feature.studygroup.dto.CheckSolvedProblemResponse;
-import com.gamzabat.algohub.feature.studygroup.dto.CreateGroupRequest;
-import com.gamzabat.algohub.feature.studygroup.dto.GetGroupMemberResponse;
+import com.gamzabat.algohub.feature.studygroup.dto.*;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
@@ -20,10 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.gamzabat.algohub.common.annotation.AuthedUser;
-import com.gamzabat.algohub.feature.studygroup.dto.GetStudyGroupWithCodeResponse;
 import com.gamzabat.algohub.feature.user.domain.User;
-import com.gamzabat.algohub.feature.studygroup.dto.EditGroupRequest;
-import com.gamzabat.algohub.feature.studygroup.dto.GetStudyGroupResponse;
 import com.gamzabat.algohub.exception.RequestException;
 import com.gamzabat.algohub.feature.studygroup.service.StudyGroupService;
 
@@ -107,5 +102,12 @@ public class StudyGroupController {
 	@Operation(summary = "그룹 코드를 사용한 그룹 정보 조회 API")
 	public ResponseEntity<GetStudyGroupWithCodeResponse> getGroupByCode(@PathVariable String code){
 		return ResponseEntity.ok().body(studyGroupService.getGroupByCode(code));
+	}
+
+	@GetMapping(value = "ranking")
+	@Operation(summary = "과제 진행도 순위")
+	public ResponseEntity<Object> getRanking(@AuthedUser User user, @RequestParam Long groupId) {
+		List<GetRankingResponse> rankingResponse = studyGroupService.getRank(user, groupId);
+		return ResponseEntity.ok().body(rankingResponse);
 	}
 }
