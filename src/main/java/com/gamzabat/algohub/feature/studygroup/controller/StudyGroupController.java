@@ -2,6 +2,7 @@ package com.gamzabat.algohub.feature.studygroup.controller;
 
 import java.util.List;
 
+import com.gamzabat.algohub.feature.studygroup.domain.StudyGroup;
 import com.gamzabat.algohub.feature.studygroup.dto.*;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -110,4 +111,11 @@ public class StudyGroupController {
 		List<GetRankingResponse> rankingResponse = studyGroupService.getRank(user, groupId);
 		return ResponseEntity.ok().body(rankingResponse);
 	}
-}
+
+	@GetMapping(value = "group-info")
+	@Operation(summary = "그룹정보")
+	public ResponseEntity<GetGroupResponse> groupInfo(@AuthedUser User user, @RequestParam Long groupId) {
+		GetGroupResponse response = studyGroupService.getGroup(user,groupId);
+		return ResponseEntity.ok().body(response);
+	}
+ }
