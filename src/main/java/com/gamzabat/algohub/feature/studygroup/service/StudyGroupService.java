@@ -139,6 +139,11 @@ public class StudyGroupService {
 				String nickname = groupMember.getUser().getNickname();
 				responseList.add(new GetGroupMemberResponse(nickname, profileImage, groupMemberId));
 			}
+			String profileImage = group.getOwner().getProfileImage();
+			Long groupMemberId = group.getOwner().getId();
+			String nickname = group.getOwner().getNickname();
+			responseList.add(new GetGroupMemberResponse(nickname, profileImage, groupMemberId));
+
 			return responseList;
 		}
 		else {
@@ -164,6 +169,11 @@ public class StudyGroupService {
 				Boolean solved = solutionRepository.existsByUserAndProblem(groupMember.getUser(), problem);
 				responseList.add(new CheckSolvedProblemResponse(groupMemberId, profileImage, nickname, solved));
 			}
+			String profileImage = studyGroup.getOwner().getProfileImage();
+			Long groupMemberId = studyGroup.getOwner().getId();
+			String nickname = studyGroup.getOwner().getNickname();
+			Boolean solved = solutionRepository.existsByUserAndProblem(studyGroup.getOwner(), problem);
+			responseList.add(new CheckSolvedProblemResponse(groupMemberId, profileImage, nickname, solved));
 
 			return responseList;
 		}
