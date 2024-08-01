@@ -1,14 +1,17 @@
 package com.gamzabat.algohub.feature.solution.service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Iterator;
 import java.util.List;
 
 import com.gamzabat.algohub.exception.StudyGroupValidationException;
 import com.gamzabat.algohub.exception.UserValidationException;
+import com.gamzabat.algohub.feature.comment.repository.CommentRepository;
 import com.gamzabat.algohub.feature.solution.domain.Solution;
 import com.gamzabat.algohub.feature.solution.dto.CreateSolutionRequest;
 import com.gamzabat.algohub.feature.solution.dto.GetSolutionResponse;
+import com.gamzabat.algohub.feature.solution.exception.CannotFoundSolutionException;
 import com.gamzabat.algohub.feature.user.repository.UserRepository;
 
 import org.springframework.data.domain.Page;
@@ -44,6 +47,7 @@ public class SolutionService {
 	private final StudyGroupRepository studyGroupRepository;
 	private final GroupMemberRepository groupMemberRepository;
 	private final UserRepository userRepository;
+	private final CommentRepository commentRepository;
 
 	public Page<GetSolutionResponse> getSolutionList(User user, Long problemId, Pageable pageable) {
 		Problem problem = problemRepository.findById(problemId)
@@ -57,12 +61,30 @@ public class SolutionService {
 			throw new GroupMemberValidationException(HttpStatus.FORBIDDEN.value(),"참여하지 않은 그룹 입니다.");
 		}
 
-		Page<Solution> solutions = solutionRepository.findAllByProblem(problem, pageable);
+		Page<Solution> solutions = solutionRepository.findAllByProblemOrderBySolvedDateTimeDesc(problem, pageable);
 		log.info("success to get solution list");
 
-		return solutions.map(GetSolutionResponse::toDTO);
+		return solutions.map(solution -> {
+			long commentCount = commentRepository.countCommentsBySolutionId(solution.getId());
+			return GetSolutionResponse.toDTO(solution,commentCount);
+		});
 	}
 
+	public GetSolutionResponse getSolution(User user, Long solutionId){
+		Solution solution = solutionRepository.findById(solutionId)
+				.orElseThrow(() -> new CannotFoundSolutionException("존재하지 않는 풀이 입니다."));
+
+		StudyGroup group = solution.getProblem().getStudyGroup();
+		Boolean isExist = groupMemberRepository.existsByUserAndStudyGroup(user,group);
+
+		if (isExist) {
+			long commentCount = commentRepository.countCommentsBySolutionId(solution.getId());
+			return GetSolutionResponse.toDTO(solution,commentCount);
+		}
+		else {
+			throw new UserValidationException("해당 풀이를 확인 할 권한이 없습니다.");
+		}
+	}
 	public void createSolution(CreateSolutionRequest request) {
 
 		List<Problem> problems = problemRepository.findAllByNumber(request.problemNumber());
@@ -103,6 +125,7 @@ public class SolutionService {
 		}
 
 	}
+
 	public void test(CreateSolutionRequest request) {
 		log.info("username:"+request.userName());
 		log.info("code:"+request.code());

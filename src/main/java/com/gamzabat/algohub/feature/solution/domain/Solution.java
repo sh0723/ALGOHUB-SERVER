@@ -39,7 +39,6 @@ public class Solution {
 	private String language;
 	private Integer codeLength;
 
-
 	@Builder
 	public Solution(Problem problem, User user, LocalDate solvedDate,LocalDateTime solvedDateTime, String content, boolean isCorrect,
 					Integer memoryUsage, Integer executionTime, String language, Integer codeLength) {

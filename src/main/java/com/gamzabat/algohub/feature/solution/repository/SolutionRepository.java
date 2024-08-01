@@ -15,7 +15,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface SolutionRepository extends JpaRepository<Solution,Long> {
-	Page<Solution> findAllByProblem(Problem problem, Pageable pageable);
+	Page<Solution> findAllByProblemOrderBySolvedDateTimeDesc(Problem problem, Pageable pageable);
 	Boolean existsByUserAndProblem(User user, Problem problem);
 
 
