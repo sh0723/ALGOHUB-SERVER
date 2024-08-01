@@ -75,9 +75,9 @@ public class SolutionService {
 				.orElseThrow(() -> new CannotFoundSolutionException("존재하지 않는 풀이 입니다."));
 
 		StudyGroup group = solution.getProblem().getStudyGroup();
-		Boolean isExist = groupMemberRepository.existsByUserAndStudyGroup(user,group);
 
-		if (isExist) {
+		if (groupMemberRepository.existsByUserAndStudyGroup(user,group)
+			|| group.getOwner().getId().equals(user.getId())) {
 			long commentCount = commentRepository.countCommentsBySolutionId(solution.getId());
 			return GetSolutionResponse.toDTO(solution,commentCount);
 		}
