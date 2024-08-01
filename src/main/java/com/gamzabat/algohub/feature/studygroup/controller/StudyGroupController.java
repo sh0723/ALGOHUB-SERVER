@@ -59,10 +59,18 @@ public class StudyGroupController {
 		return ResponseEntity.ok().body(response);
 	}
 
-	@DeleteMapping
+	@DeleteMapping(value = "leave")
 	@Operation(summary = "그룹 탈퇴 API", description = "방장,멤버 상관 없이 해당 그룹을 삭제,탈퇴하는 API")
 	public ResponseEntity<Object> deleteGroup(@AuthedUser User user, @RequestParam Long groupId){
 		studyGroupService.deleteGroup(user,groupId);
+		return ResponseEntity.ok().body("OK");
+	}
+
+
+	@DeleteMapping(value  = "delete")
+	@Operation(summary = "그룹 멤버 삭제", description = "방장만 가능한 그룹 멤버를 삭제하는 API")
+	public ResponseEntity<Object> deleteUser(@AuthedUser User user, @RequestParam Long userId, @RequestParam Long groupId) {
+		studyGroupService.deleteMember(user,userId,groupId);
 		return ResponseEntity.ok().body("OK");
 	}
 

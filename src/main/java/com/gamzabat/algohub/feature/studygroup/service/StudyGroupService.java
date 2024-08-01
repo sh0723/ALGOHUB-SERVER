@@ -14,12 +14,14 @@ import com.gamzabat.algohub.feature.studygroup.domain.StudyGroup;
 import com.gamzabat.algohub.feature.studygroup.dto.*;
 import com.gamzabat.algohub.feature.studygroup.exception.CannotFoundGroupException;
 import com.gamzabat.algohub.feature.studygroup.exception.CannotFoundProblemException;
+import com.gamzabat.algohub.feature.studygroup.exception.CannotFoundUserException;
 import com.gamzabat.algohub.feature.studygroup.exception.GroupMemberValidationException;
 import com.gamzabat.algohub.exception.*;
 import com.gamzabat.algohub.feature.problem.repository.ProblemRepository;
 import com.gamzabat.algohub.feature.solution.repository.SolutionRepository;
 import com.gamzabat.algohub.feature.image.service.ImageService;
 import com.gamzabat.algohub.feature.user.domain.User;
+import com.gamzabat.algohub.feature.user.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +45,7 @@ public class StudyGroupService {
 	private final ImageService imageService;
 	private final SolutionRepository solutionRepository;
 	private final ProblemRepository problemRepository;
+	private final UserRepository userRepository;
 
 	@Transactional
 	public void createGroup(User user, CreateGroupRequest request, MultipartFile profileImage) {
@@ -91,6 +94,24 @@ public class StudyGroupService {
 			groupMemberRepository.delete(member);
 		}
 		log.info("success to delete(exit) study group");
+	}
+
+	@Transactional
+	public void deleteMember(User user, Long userId, Long groupId) {
+		StudyGroup group = groupRepository.findById(groupId)
+				.orElseThrow(() -> new StudyGroupValidationException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 그룹 입니다."));
+
+		if (group.getOwner().getId().equals(user.getId())) {
+			User targetUser = userRepository.findById(userId)
+					.orElseThrow(() -> new CannotFoundUserException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 유저입니다."));
+			GroupMember targetMember = groupMemberRepository.findByUserAndStudyGroup(targetUser,group)
+					.orElseThrow(() -> new GroupMemberValidationException(HttpStatus.BAD_REQUEST.value(), "이미 참여하지 않은 그룹 입니다."));
+
+			groupMemberRepository.delete(targetMember);
+		}
+		else {
+			throw new UserValidationException("삭제 할 권한이 없습니다.");
+		}
 	}
 
 	@Transactional(readOnly = true)
