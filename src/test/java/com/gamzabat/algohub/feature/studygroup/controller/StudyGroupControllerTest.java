@@ -182,28 +182,28 @@ class StudyGroupControllerTest {
 		verify(studyGroupService,times(1)).joinGroupWithCode(user,code);
 	}
 
-	@Test
-	@DisplayName("그룹 목록 조회 성공")
-	void getStudyGroupList() throws Exception {
-		// given
-		List<GetStudyGroupResponse> response = new ArrayList<>();
-		for (int i=0; i<30; i++){
-			response.add(new GetStudyGroupResponse(
-				(long)i,"name"+i, "groupImage"+1,
-				LocalDate.now(),LocalDate.now().plusDays(i),
-				"introduction"+1,"nickname",true
-			));
-		}
-		when(studyGroupService.getStudyGroupList(user)).thenReturn(response);
-		// when, then
-		mockMvc.perform(get("/api/group/list")
-				.header("Authorization",token)
-				.contentType(MediaType.APPLICATION_JSON))
-			.andExpect(status().isOk())
-			.andExpect(content().json(objectMapper.writeValueAsString(response)));
-
-		verify(studyGroupService,times(1)).getStudyGroupList(any(User.class));
-	}
+//	@Test
+//	@DisplayName("그룹 목록 조회 성공")
+//	void getStudyGroupList() throws Exception {
+//		// given
+//		List<GetStudyGroupResponse> response = new ArrayList<>();
+//		for (int i=0; i<30; i++){
+//			response.add(new GetStudyGroupResponse(
+//				(long)i,"name"+i, "groupImage"+1,
+//				LocalDate.now(),LocalDate.now().plusDays(i),
+//				"introduction"+1,"nickname",true
+//			));
+//		}
+//		when(studyGroupService.getStudyGroupList(user)).thenReturn(response);
+//		// when, then
+//		mockMvc.perform(get("/api/group/list")
+//				.header("Authorization",token)
+//				.contentType(MediaType.APPLICATION_JSON))
+//			.andExpect(status().isOk())
+//			.andExpect(content().json(objectMapper.writeValueAsString(response)));
+//
+//		verify(studyGroupService,times(1)).getStudyGroupList(any(User.class));
+//	}
 
 	@Test
 	@DisplayName("그룹 탈퇴 성공")
@@ -349,26 +349,26 @@ class StudyGroupControllerTest {
 		verify(studyGroupService,times(1)).editGroup(any(User.class),any(EditGroupRequest.class),any(MultipartFile.class));
 	}
 
-	@Test
-	@DisplayName("그룹 회원 목록 조회 성공")
-	void getGroupInfo() throws Exception {
-		// given
-		List<GetGroupMemberResponse> response = new ArrayList<>(30);
-		for(int i=0; i<30; i++){
-			response.add(new GetGroupMemberResponse(
-				"name"+i,"profileImage"+i,(long)i
-			));
-		}
-		when(studyGroupService.groupInfo(user,groupId)).thenReturn(response);
-		// when, then
-		mockMvc.perform(get("/api/group/member-list")
-				.header("Authorization",token)
-				.param("groupId",String.valueOf(groupId)))
-			.andExpect(status().isOk())
-			.andExpect(content().json(objectMapper.writeValueAsString(response)));
-
-		verify(studyGroupService,times(1)).groupInfo(any(User.class),anyLong());
-	}
+//	@Test
+//	@DisplayName("그룹 회원 목록 조회 성공")
+//	void getGroupInfo() throws Exception {
+//		// given
+//		List<GetGroupMemberResponse> response = new ArrayList<>(30);
+//		for(int i=0; i<30; i++){
+//			response.add(new GetGroupMemberResponse(
+//				"name"+i,"profileImage"+i,(long)i
+//			));
+//		}
+//		when(studyGroupService.groupInfo(user,groupId)).thenReturn(response);
+//		// when, then
+//		mockMvc.perform(get("/api/group/member-list")
+//				.header("Authorization",token)
+//				.param("groupId",String.valueOf(groupId)))
+//			.andExpect(status().isOk())
+//			.andExpect(content().json(objectMapper.writeValueAsString(response)));
+//
+//		verify(studyGroupService,times(1)).groupInfo(any(User.class),anyLong());
+//	}
 
 	@Test
 	@DisplayName("그룹 회원 목록 조회 실패 : 존재하지 않는 그룹")

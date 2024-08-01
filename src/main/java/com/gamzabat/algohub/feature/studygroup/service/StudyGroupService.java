@@ -113,16 +113,33 @@ public class StudyGroupService {
 			throw new UserValidationException("삭제 할 권한이 없습니다.");
 		}
 	}
-
 	@Transactional(readOnly = true)
-	public List<GetStudyGroupResponse> getStudyGroupList(User user) {
+	public GetStudyGroupListsResponse getStudyGroupList(User user) {
 		List<StudyGroup> groups = groupRepository.findByUser(user);
-		List<GetStudyGroupResponse> list = groups.stream()
-				.map(group -> GetStudyGroupResponse.toDTO(group, user)).toList();
-		log.info("success to get study group list");
-		return list;
-	}
 
+		LocalDate today = LocalDate.now();
+
+		List<GetStudyGroupResponse> done = groups.stream()
+				.filter(group -> group.getEndDate() != null && group.getEndDate().isBefore(today))
+				.map(group -> GetStudyGroupResponse.toDTO(group, user))
+				.collect(Collectors.toList());
+
+		List<GetStudyGroupResponse> inProgress = groups.stream()
+				.filter(group -> group.getStartDate() != null && group.getStartDate().isBefore(today) &&
+						(group.getEndDate() == null || group.getEndDate().isAfter(today)))
+				.map(group -> GetStudyGroupResponse.toDTO(group, user))
+				.collect(Collectors.toList());
+
+		List<GetStudyGroupResponse> queued = groups.stream()
+				.filter(group -> group.getStartDate() != null && group.getStartDate().isAfter(today))
+				.map(group -> GetStudyGroupResponse.toDTO(group, user))
+				.collect(Collectors.toList());
+
+		GetStudyGroupListsResponse response = new GetStudyGroupListsResponse(done, inProgress, queued);
+
+		log.info("success to get study group list");
+		return response;
+	}
 	@Transactional
 	public void editGroup(User user, EditGroupRequest request, MultipartFile groupImage) {
 		StudyGroup group = groupRepository.findById(request.id())
