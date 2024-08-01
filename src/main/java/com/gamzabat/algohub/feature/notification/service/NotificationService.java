@@ -2,11 +2,13 @@ package com.gamzabat.algohub.feature.notification.service;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.MediaType;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -141,6 +143,16 @@ public class NotificationService {
 	@Transactional(readOnly = true)
 	public List<GetNotificationResponse> getNotifications(User user) {
 		List<Notification> notifications = notificationRepository.findAllByUser(user);
+		notifications.sort(Comparator.comparingLong(Notification::getId).reversed());
 		return notifications.stream().map(GetNotificationResponse::toDTO).toList();
+	}
+
+	public void updateIsRead(User user) {
+		List<Notification> notifications = notificationRepository.findAllByUserAndIsRead(user,false);
+		notifications.forEach(notification -> {
+			notification.updateIsRead();
+			notificationRepository.save(notification);
+		});
+		log.info("success to read status");
 	}
 }

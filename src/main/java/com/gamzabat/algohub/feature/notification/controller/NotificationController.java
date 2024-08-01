@@ -4,7 +4,9 @@ import static org.springframework.http.MediaType.*;
 
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,10 +36,15 @@ public class NotificationController {
 
 	@GetMapping
 	@Operation(summary = "알림 목록 조회 API")
-	public List<GetNotificationResponse> getNotifications(@AuthedUser User user){
-		return notificationService.getNotifications(user);
+	public ResponseEntity<List<GetNotificationResponse>> getNotifications(@AuthedUser User user){
+		return ResponseEntity.ok().body(notificationService.getNotifications(user));
 	}
 
+	@PatchMapping
+	@Operation(summary = "알림 읽음을 표시하는 API", description = "알림 탭을 연 후 닫을 때 호출하면 봤던 알림들은 읽음 처리 되는 API")
+	public void updateIsRead(@AuthedUser User user){
+		notificationService.updateIsRead(user);
+	}
 
 
 }
