@@ -1,7 +1,6 @@
 package com.gamzabat.algohub.feature.solution.service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Iterator;
 import java.util.List;
 
@@ -96,7 +95,6 @@ public class SolutionService {
 				.orElseThrow(() -> new UserValidationException("존재하지 않는 유저 입니다."));
 
 		Iterator<Problem> iterator = problems.iterator();
-
 		while (iterator.hasNext()) {
 			Problem problem = iterator.next();
 			StudyGroup studyGroup = problem.getStudyGroup(); // problem에 딸린 그룹 고유id 로 studyGroup 가져오기
@@ -105,7 +103,7 @@ public class SolutionService {
 			LocalDate now = LocalDate.now();
 
 
-			if (studyGroup.getOwner() != user || groupMemberRepository.existsByUserAndStudyGroup(user, studyGroup)
+			if ((studyGroup.getOwner() != user && !groupMemberRepository.existsByUserAndStudyGroup(user, studyGroup))
 			||endDate == null || now.isAfter(endDate)) {
 				iterator.remove();
 				continue;
