@@ -166,7 +166,9 @@ public class StudyGroupService {
 				String achivement = getPercentage(correctSolution,problems) + "%";
 
 				Boolean isOwner = group.getOwner().getId().equals(groupMember.getId());
-				responseList.add(new GetGroupMemberResponse(nickname, joinDate, achivement, isOwner));
+				String profileImage = groupMember.getUser().getProfileImage();
+				Long userId = groupMember.getUser().getId();
+				responseList.add(new GetGroupMemberResponse(nickname, joinDate, achivement, isOwner,profileImage,userId));
 			}
 
 			String nickname = group.getOwner().getNickname();
@@ -175,7 +177,10 @@ public class StudyGroupService {
 			Long correctSolution = solutionRepository.countDistinctCorrectSolutionsByUserAndGroup(group.getOwner(),id);
 			Long problems = problemRepository.countProblemsByGroupId(id);
 			String achivement = getPercentage(correctSolution,problems) + "%";
-			responseList.add(new GetGroupMemberResponse(nickname, joinDate, achivement, true));
+
+			String profileImage = group.getOwner().getProfileImage();
+			Long userId = group.getOwner().getId();
+			responseList.add(new GetGroupMemberResponse(nickname, joinDate, achivement, true,profileImage,userId));
 
 			return responseList;
 		} else {
