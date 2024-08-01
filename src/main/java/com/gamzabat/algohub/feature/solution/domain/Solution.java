@@ -30,7 +30,6 @@
 		@JoinColumn(name = "user_id")
 		private User user;
 
-		private LocalDate solvedDate;
 		private LocalDateTime solvedDateTime;
 		private String content;
 		private boolean isCorrect;
@@ -41,11 +40,10 @@
 
 
 		@Builder
-		public Solution(Problem problem, User user, LocalDate solvedDate,LocalDateTime solvedDateTime, String content, boolean isCorrect,
+		public Solution(Problem problem, User user,LocalDateTime solvedDateTime, String content, boolean isCorrect,
 						Integer memoryUsage, Integer executionTime, String language, Integer codeLength) {
 			this.problem = problem;
 			this.user = user;
-			this.solvedDate = solvedDate;
 			this.solvedDateTime = solvedDateTime;        //??
 			this.content = content;                //??
 			this.isCorrect = isCorrect;            //정답 여부
