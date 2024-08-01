@@ -138,4 +138,9 @@ public class NotificationService {
 		}
 	}
 
+	@Transactional(readOnly = true)
+	public List<GetNotificationResponse> getNotifications(User user) {
+		List<Notification> notifications = notificationRepository.findAllByUser(user);
+		return notifications.stream().map(GetNotificationResponse::toDTO).toList();
+	}
 }
