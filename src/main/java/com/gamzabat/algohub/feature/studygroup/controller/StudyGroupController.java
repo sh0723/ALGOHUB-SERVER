@@ -54,8 +54,8 @@ public class StudyGroupController {
 
 	@GetMapping(value = "list")
 	@Operation(summary = "그룹 목록 조회 API", description = "방장 여부 상관 없이 유저가 참여하고 있는 그룹 모두 조회")
-	public ResponseEntity<List<GetStudyGroupResponse>> getStudyGroupList(@AuthedUser User user){
-		List<GetStudyGroupResponse> response = studyGroupService.getStudyGroupList(user);
+	public ResponseEntity<GetStudyGroupListsResponse> getStudyGroupList(@AuthedUser User user){
+		GetStudyGroupListsResponse response = studyGroupService.getStudyGroupList(user);
 		return ResponseEntity.ok().body(response);
 	}
 
