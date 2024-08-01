@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gamzabat.algohub.feature.notification.service.NotificationService;
 import com.gamzabat.algohub.feature.problem.domain.Problem;
 import com.gamzabat.algohub.feature.problem.dto.GetProblemListsResponse;
 import org.springframework.data.domain.Page;
@@ -17,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 
+import com.gamzabat.algohub.feature.studygroup.domain.GroupMember;
 import com.gamzabat.algohub.feature.studygroup.domain.StudyGroup;
 import com.gamzabat.algohub.feature.user.domain.User;
 import com.gamzabat.algohub.feature.problem.dto.GetProblemResponse;
@@ -40,6 +42,7 @@ public class ProblemService {
 	private final ProblemRepository problemRepository;
 	private final StudyGroupRepository studyGroupRepository;
 	private final GroupMemberRepository groupMemberRepository;
+	private final NotificationService notificationService;
 
 	@Transactional
 	public void createProblem(User user, CreateProblemRequest request) {
@@ -60,6 +63,10 @@ public class ProblemService {
 			.startDate(request.startDate())
 			.endDate(request.endDate())
 			.build());
+
+		List<GroupMember> members = groupMemberRepository.findAllByStudyGroup(group);
+		List<String> users = members.stream().map(member -> member.getUser().getEmail()).toList();
+		notificationService.sendList(users,"새로운 과제가 등록되었습니다.", group, null);
 
 		log.info("success to create problem");
 	}
