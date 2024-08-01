@@ -92,6 +92,11 @@ public class ProblemService {
 			Integer submitMemberCount = solutionRepository.countDistinctUsersByProblemId(problemId);
 			Integer groupMemberCount = groupMemberRepository.countMembersByStudyGroupId(groupId)+1;
 			Integer accuracy;
+			Boolean inProgress ;
+
+			if(problem.getEndDate()==null||LocalDate.now().isAfter(problem.getEndDate())){
+				inProgress = false;
+			}else inProgress = true;
 			if (submitMemberCount == 0) {
 				accuracy = 0;
 			} else {
@@ -101,7 +106,7 @@ public class ProblemService {
 				accuracy = tempAccuracy.intValue();
 			}
 
-			return new GetProblemResponse(title, problemId, link, startDate, endDate, level, solved, submitMemberCount, groupMemberCount, accuracy);
+			return new GetProblemResponse(title, problemId, link, startDate, endDate, level, solved, submitMemberCount, groupMemberCount, accuracy,inProgress);
 		});
 	}
 
@@ -129,7 +134,11 @@ public class ProblemService {
 			Integer submitMemberCount = solutionRepository.countDistinctUsersByProblemId(problemId);
 			Integer groupMemberCount = groupMemberRepository.countMembersByStudyGroupId(groupId)+1;
 			Integer accuracy;
-			if (submitMemberCount == 0) {
+			Boolean inProgress ;
+
+			if(problem.getEndDate()==null||LocalDate.now().isAfter(problem.getEndDate())){
+				inProgress = false;
+			}else inProgress = true;			if (submitMemberCount == 0) {
 				accuracy = 0;
 			} else {
 				Double tempCorrectCount = correctCount.doubleValue();
@@ -147,9 +156,12 @@ public class ProblemService {
 				solutionRepository.existsByUserAndProblemAndIsCorrect(user, problem, true),
 				submitMemberCount,
 				groupMemberCount,
-				accuracy);
+				accuracy,
+					inProgress);
 		}).toList();
 	}
+
+
 
 	private Problem getProblem(Long problemId) {
 		return problemRepository.findById(problemId)
