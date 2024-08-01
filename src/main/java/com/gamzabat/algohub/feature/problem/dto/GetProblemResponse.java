@@ -16,8 +16,9 @@ public class GetProblemResponse {
 	private Integer submitMemberCount;
 	private Integer memberCount;
 	private Integer accurancy;
+	private boolean inProgress;
 
-	public GetProblemResponse(String title,Long problemId, String link, LocalDate startDate, LocalDate endDate, Integer level, boolean solved, Integer submissionCount, Integer memberCount, Integer accurancy) {
+	public GetProblemResponse(String title,Long problemId, String link, LocalDate startDate, LocalDate endDate, Integer level, boolean solved, Integer submissionCount, Integer memberCount, Integer accurancy,boolean inProgress) {
 		this.title = title;
 		this.problemId = problemId;
 		this.link = link;
@@ -28,6 +29,7 @@ public class GetProblemResponse {
 		this.submitMemberCount = submissionCount;
 		this.memberCount = memberCount;
 		this.accurancy = accurancy;
+		this.inProgress = inProgress;
 	}
 }
 /*public record GetProblemResponse(Long problemId,
