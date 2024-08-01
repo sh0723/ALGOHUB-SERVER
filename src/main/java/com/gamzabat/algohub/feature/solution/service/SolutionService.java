@@ -11,6 +11,7 @@ import com.gamzabat.algohub.feature.comment.repository.CommentRepository;
 import com.gamzabat.algohub.feature.solution.domain.Solution;
 import com.gamzabat.algohub.feature.solution.dto.CreateSolutionRequest;
 import com.gamzabat.algohub.feature.solution.dto.GetSolutionResponse;
+import com.gamzabat.algohub.feature.solution.exception.CannotFoundSolutionException;
 import com.gamzabat.algohub.feature.user.repository.UserRepository;
 
 import org.springframework.data.domain.Page;
@@ -69,6 +70,21 @@ public class SolutionService {
 		});
 	}
 
+	public GetSolutionResponse getSolution(User user, Long solutionId){
+		Solution solution = solutionRepository.findById(solutionId)
+				.orElseThrow(() -> new CannotFoundSolutionException("존재하지 않는 풀이 입니다."));
+
+		StudyGroup group = solution.getProblem().getStudyGroup();
+		Boolean isExist = groupMemberRepository.existsByUserAndStudyGroup(user,group);
+
+		if (isExist) {
+			long commentCount = commentRepository.countCommentsBySolutionId(solution.getId());
+			return GetSolutionResponse.toDTO(solution,commentCount);
+		}
+		else {
+			throw new UserValidationException("해당 풀이를 확인 할 권한이 없습니다.");
+		}
+	}
 	public void createSolution(CreateSolutionRequest request) {
 
 		List<Problem> problems = problemRepository.findAllByNumber(request.problemNumber());
@@ -109,6 +125,7 @@ public class SolutionService {
 		}
 
 	}
+
 	public void test(CreateSolutionRequest request) {
 		log.info("username:"+request.userName());
 		log.info("code:"+request.code());
