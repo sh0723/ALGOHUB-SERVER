@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.gamzabat.algohub.feature.notification.service.NotificationService;
 import com.gamzabat.algohub.feature.problem.domain.Problem;
 import com.gamzabat.algohub.feature.solution.domain.Solution;
 import com.gamzabat.algohub.feature.studygroup.domain.StudyGroup;
@@ -37,6 +38,7 @@ public class CommentService {
 	private final ProblemRepository problemRepository;
 	private final StudyGroupRepository studyGroupRepository;
 	private final GroupMemberRepository groupMemberRepository;
+	private final NotificationService notificationService;
 
 	@Transactional
 	public void createComment(User user, CreateCommentRequest request) {
@@ -48,6 +50,13 @@ public class CommentService {
 				.content(request.content())
 				.createdAt(LocalDateTime.now())
 			.build());
+
+
+		notificationService.send(solution.getUser().getEmail(),
+			user.getNickname()+"님이 코멘트를 남겼습니다.",
+			solution.getProblem().getStudyGroup(),
+			request.content().substring(0,35)+"...");
+
 		log.info("success to create comment");
 	}
 
