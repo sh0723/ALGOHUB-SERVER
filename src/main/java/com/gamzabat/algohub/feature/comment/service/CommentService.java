@@ -51,11 +51,16 @@ public class CommentService {
 				.createdAt(LocalDateTime.now())
 			.build());
 
+		String message;
+		if(request.content().length()<35)
+			message = request.content();
+		else
+			message = request.content().substring(0,35)+"...";
 
 		notificationService.send(solution.getUser().getEmail(),
 			user.getNickname()+"님이 코멘트를 남겼습니다.",
 			solution.getProblem().getStudyGroup(),
-			request.content().substring(0,35)+"...");
+			message);
 
 		log.info("success to create comment");
 	}
