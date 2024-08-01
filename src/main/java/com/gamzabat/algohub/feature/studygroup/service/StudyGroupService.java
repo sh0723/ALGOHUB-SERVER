@@ -182,6 +182,8 @@ public class StudyGroupService {
 			Long userId = group.getOwner().getId();
 			responseList.add(new GetGroupMemberResponse(nickname, joinDate, achivement, true,profileImage,userId));
 
+			responseList.sort((a, b) -> Boolean.compare(!a.getIsOwner(), !b.getIsOwner()));
+
 			return responseList;
 		} else {
 			throw new UserValidationException("그룹 내용을 확인할 권한이 없습니다");
