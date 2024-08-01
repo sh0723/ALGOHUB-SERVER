@@ -117,7 +117,7 @@ public class SolutionService {
 					.language(request.codeType())
 					.codeLength(request.codeLength())
 					.isCorrect(request.result().equals("맞았습니다!!"))
-					.solvedDate(LocalDate.now())
+					.solvedDateTime(LocalDateTime.now())
 					.build()
 			);
 		}
