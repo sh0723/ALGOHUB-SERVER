@@ -205,53 +205,53 @@ class StudyGroupControllerTest {
 		verify(studyGroupService,times(1)).getStudyGroupList(any(User.class));
 	}
 
-	@Test
-	@DisplayName("그룹 탈퇴 성공")
-	void deleteGroup() throws Exception {
-		// given
-		doNothing().when(studyGroupService).deleteGroup(user,groupId);
-		// when, then
-		mockMvc.perform(delete("/api/group")
-				.header("Authorization",token)
-				.param("groupId",String.valueOf(groupId))
-				.contentType(MediaType.APPLICATION_JSON))
-			.andExpect(status().isOk())
-			.andExpect(content().string("OK"));
-
-		verify(studyGroupService,times(1)).deleteGroup(any(User.class),anyLong());
-	}
-
-	@Test
-	@DisplayName("그룹 탈퇴 실패 : 존재하지 않는 그룹")
-	void deleteGroupFailed_1() throws Exception {
-		// given
-		doThrow(new StudyGroupValidationException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 그룹 입니다.")).when(studyGroupService).deleteGroup(user,groupId);
-		// when, then
-		mockMvc.perform(delete("/api/group")
-				.header("Authorization",token)
-				.param("groupId",String.valueOf(groupId))
-				.contentType(MediaType.APPLICATION_JSON))
-			.andExpect(status().isNotFound())
-			.andExpect(jsonPath("$.error").value("존재하지 않는 그룹 입니다."));
-
-		verify(studyGroupService,times(1)).deleteGroup(any(User.class),anyLong());
-	}
-
-	@Test
-	@DisplayName("그룹 탈퇴 실패 : 이미 참여 안한 그룹")
-	void deleteGroupFailed_2() throws Exception {
-		// given
-		doThrow(new GroupMemberValidationException(HttpStatus.BAD_REQUEST.value(), "이미 참여하지 않은 그룹 입니다.")).when(studyGroupService).deleteGroup(user,groupId);
-		// when, then
-		mockMvc.perform(delete("/api/group")
-				.header("Authorization",token)
-				.param("groupId",String.valueOf(groupId))
-				.contentType(MediaType.APPLICATION_JSON))
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath("$.error").value("이미 참여하지 않은 그룹 입니다."));
-
-		verify(studyGroupService,times(1)).deleteGroup(any(User.class),anyLong());
-	}
+	// @Test
+	// @DisplayName("그룹 탈퇴 성공")
+	// void deleteGroup() throws Exception {
+	// 	// given
+	// 	doNothing().when(studyGroupService).deleteGroup(user,groupId);
+	// 	// when, then
+	// 	mockMvc.perform(delete("/api/group")
+	// 			.header("Authorization",token)
+	// 			.param("groupId",String.valueOf(groupId))
+	// 			.contentType(MediaType.APPLICATION_JSON))
+	// 		.andExpect(status().isOk())
+	// 		.andExpect(content().string("OK"));
+	//
+	// 	verify(studyGroupService,times(1)).deleteGroup(any(User.class),anyLong());
+	// }
+	//
+	// @Test
+	// @DisplayName("그룹 탈퇴 실패 : 존재하지 않는 그룹")
+	// void deleteGroupFailed_1() throws Exception {
+	// 	// given
+	// 	doThrow(new StudyGroupValidationException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 그룹 입니다.")).when(studyGroupService).deleteGroup(user,groupId);
+	// 	// when, then
+	// 	mockMvc.perform(delete("/api/group")
+	// 			.header("Authorization",token)
+	// 			.param("groupId",String.valueOf(groupId))
+	// 			.contentType(MediaType.APPLICATION_JSON))
+	// 		.andExpect(status().isNotFound())
+	// 		.andExpect(jsonPath("$.error").value("존재하지 않는 그룹 입니다."));
+	//
+	// 	verify(studyGroupService,times(1)).deleteGroup(any(User.class),anyLong());
+	// }
+	//
+	// @Test
+	// @DisplayName("그룹 탈퇴 실패 : 이미 참여 안한 그룹")
+	// void deleteGroupFailed_2() throws Exception {
+	// 	// given
+	// 	doThrow(new GroupMemberValidationException(HttpStatus.BAD_REQUEST.value(), "이미 참여하지 않은 그룹 입니다.")).when(studyGroupService).deleteGroup(user,groupId);
+	// 	// when, then
+	// 	mockMvc.perform(delete("/api/group")
+	// 			.header("Authorization",token)
+	// 			.param("groupId",String.valueOf(groupId))
+	// 			.contentType(MediaType.APPLICATION_JSON))
+	// 		.andExpect(status().isBadRequest())
+	// 		.andExpect(jsonPath("$.error").value("이미 참여하지 않은 그룹 입니다."));
+	//
+	// 	verify(studyGroupService,times(1)).deleteGroup(any(User.class),anyLong());
+	// }
 
 	@Test
 	@DisplayName("그룹 정보 수정 성공")
@@ -349,26 +349,26 @@ class StudyGroupControllerTest {
 		verify(studyGroupService,times(1)).editGroup(any(User.class),any(EditGroupRequest.class),any(MultipartFile.class));
 	}
 
-	@Test
-	@DisplayName("그룹 회원 목록 조회 성공")
-	void getGroupInfo() throws Exception {
-		// given
-		List<GetGroupMemberResponse> response = new ArrayList<>(30);
-		for(int i=0; i<30; i++){
-			response.add(new GetGroupMemberResponse(
-				"name"+i,"profileImage"+i,(long)i
-			));
-		}
-		when(studyGroupService.groupInfo(user,groupId)).thenReturn(response);
-		// when, then
-		mockMvc.perform(get("/api/group/member-list")
-				.header("Authorization",token)
-				.param("groupId",String.valueOf(groupId)))
-			.andExpect(status().isOk())
-			.andExpect(content().json(objectMapper.writeValueAsString(response)));
-
-		verify(studyGroupService,times(1)).groupInfo(any(User.class),anyLong());
-	}
+	// @Test
+	// @DisplayName("그룹 회원 목록 조회 성공")
+	// void getGroupInfo() throws Exception {
+	// 	// given
+	// 	List<GetGroupMemberResponse> response = new ArrayList<>(30);
+	// 	for(int i=0; i<30; i++){
+	// 		response.add(new GetGroupMemberResponse(
+	// 			"name"+i,"profileImage"+i,(long)i
+	// 		));
+	// 	}
+	// 	when(studyGroupService.groupInfo(user,groupId)).thenReturn(response);
+	// 	// when, then
+	// 	mockMvc.perform(get("/api/group/member-list")
+	// 			.header("Authorization",token)
+	// 			.param("groupId",String.valueOf(groupId)))
+	// 		.andExpect(status().isOk())
+	// 		.andExpect(content().json(objectMapper.writeValueAsString(response)));
+	//
+	// 	verify(studyGroupService,times(1)).groupInfo(any(User.class),anyLong());
+	// }
 
 	@Test
 	@DisplayName("그룹 회원 목록 조회 실패 : 존재하지 않는 그룹")

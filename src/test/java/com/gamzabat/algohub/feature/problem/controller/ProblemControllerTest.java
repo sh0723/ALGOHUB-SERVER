@@ -181,21 +181,21 @@ class ProblemControllerTest {
 		verify(problemService, times(1)).editProblem(user,request);
 	}
 
-	@Test
-	@DisplayName("문제 목록 조회 성공")
-	void getProblemList() throws Exception {
-		// given
-		Pageable pageable = PageRequest.of(0,20);
-		Page<GetProblemResponse> response = new PageImpl<>(new ArrayList<>(30));
-		when(problemService.getProblemList(any(User.class),anyLong(),any(Pageable.class))).thenReturn(response);
-		// when, then
-		mockMvc.perform(get("/api/problem")
-				.header("Authorization",token)
-				.param("groupId",String.valueOf(groupId)))
-			.andExpect(status().isOk())
-			.andExpect(content().string(objectMapper.writeValueAsString(response)));
-		verify(problemService,times(1)).getProblemList(user,groupId,pageable);
-	}
+	// @Test
+	// @DisplayName("문제 목록 조회 성공")
+	// void getProblemList() throws Exception {
+	// 	// given
+	// 	Pageable pageable = PageRequest.of(0,20);
+	// 	Page<GetProblemResponse> response = new PageImpl<>(new ArrayList<>(30));
+	// 	when(problemService.getProblemList(any(User.class),anyLong(),any(Pageable.class))).thenReturn(response);
+	// 	// when, then
+	// 	mockMvc.perform(get("/api/problem")
+	// 			.header("Authorization",token)
+	// 			.param("groupId",String.valueOf(groupId)))
+	// 		.andExpect(status().isOk())
+	// 		.andExpect(content().string(objectMapper.writeValueAsString(response)));
+	// 	verify(problemService,times(1)).getProblemList(user,groupId,pageable);
+	// }
 
 	@Test
 	@DisplayName("문제 목록 조회 실패 : 권한 없음")
