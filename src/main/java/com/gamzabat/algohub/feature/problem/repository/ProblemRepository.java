@@ -8,10 +8,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.gamzabat.algohub.feature.problem.domain.Problem;
 import com.gamzabat.algohub.feature.studygroup.domain.StudyGroup;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface ProblemRepository extends JpaRepository<Problem, Long> {
 	Page<Problem> findAllByStudyGroup(StudyGroup studyGroup, Pageable pageable);
 	Problem getById(Long id);
 	List<Problem> findAllByNumber(Integer Number);
 	List<Problem> findAllByStudyGroupAndEndDate(StudyGroup studyGroup, LocalDate endDate);
+	@Query("SELECT COUNT(p) FROM Problem p WHERE p.studyGroup.id = :groupId")
+	Long countProblemsByGroupId(@Param("groupId") Long groupId);
 }

@@ -25,6 +25,13 @@ public interface SolutionRepository extends JpaRepository<Solution,Long> {
 	@Query("SELECT COUNT(DISTINCT s.user) FROM Solution s WHERE s.problem.id = :problemId AND s.isCorrect = true")
 	Integer countDistinctUsersWithCorrectSolutionsByProblemId(@Param("problemId") Long problemId);
 
+	@Query("SELECT COUNT(DISTINCT s.problem.id) FROM Solution s " +
+			"JOIN s.problem p " +
+			"WHERE s.user = :user " +
+			"AND p.studyGroup.id = :groupId " +
+			"AND s.isCorrect = true")
+	Long countDistinctCorrectSolutionsByUserAndGroup(@Param("user") User user, @Param("groupId") Long groupId);
+
 	@Query("SELECT new com.gamzabat.algohub.feature.studygroup.dto.GetRankingResponse(u.nickname, u.profileImage, 0, COUNT(DISTINCT s.problem.id)) " +
 			"FROM Solution s " +
 			"JOIN s.user u " +

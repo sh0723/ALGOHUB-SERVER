@@ -1,5 +1,7 @@
 package com.gamzabat.algohub.feature.studygroup.service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -135,15 +137,24 @@ public class StudyGroupService {
 			List<GetGroupMemberResponse> responseList = new ArrayList<>();
 
 			for (GroupMember groupMember : groupMembers) {
-				String profileImage = groupMember.getUser().getProfileImage();
-				Long groupMemberId = groupMember.getUser().getId();
 				String nickname = groupMember.getUser().getNickname();
-				responseList.add(new GetGroupMemberResponse(nickname, profileImage, groupMemberId));
+				LocalDate joinDate = groupMember.getJoinDate();
+
+				Long correctSolution = solutionRepository.countDistinctCorrectSolutionsByUserAndGroup(groupMember.getUser(),id);
+				Long problems = problemRepository.countProblemsByGroupId(id);
+				String achivement = getPercentage(correctSolution,problems) + "%";
+
+				Boolean isOwner = group.getOwner().getId().equals(groupMember.getId());
+				responseList.add(new GetGroupMemberResponse(nickname, joinDate, achivement, isOwner));
 			}
-			String profileImage = group.getOwner().getProfileImage();
-			Long groupMemberId = group.getOwner().getId();
+
 			String nickname = group.getOwner().getNickname();
-			responseList.add(new GetGroupMemberResponse(nickname, profileImage, groupMemberId));
+			LocalDate joinDate = group.getStartDate();
+
+			Long correctSolution = solutionRepository.countDistinctCorrectSolutionsByUserAndGroup(group.getOwner(),id);
+			Long problems = problemRepository.countProblemsByGroupId(id);
+			String achivement = getPercentage(correctSolution,problems) + "%";
+			responseList.add(new GetGroupMemberResponse(nickname, joinDate, achivement, true));
 
 			return responseList;
 		} else {
@@ -231,5 +242,18 @@ public class StudyGroupService {
 
 		GetGroupResponse response = new GetGroupResponse(group.getId(),group.getName(),group.getStartDate(),group.getEndDate(),group.getIntroduction(),group.getGroupImage(),isOwner ,group.getOwner().getNickname());
 		return response;
+	}
+
+
+	private String getPercentage(Long numerator, Long denominator) {
+		if (denominator == 0) {
+			throw new ArithmeticException("Division by zero");
+		}
+
+		BigDecimal num = new BigDecimal(numerator);
+		BigDecimal den = new BigDecimal(denominator);
+		BigDecimal percentage = num.multiply(BigDecimal.valueOf(100)).divide(den, 0, RoundingMode.HALF_UP);
+
+		return percentage.toString();
 	}
 }
