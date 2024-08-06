@@ -74,6 +74,7 @@ class StudyGroupControllerTest {
 	private UserRepository userRepository;
 
 	private User user;
+	private final Long userId = 0L;
 	private final String token = "token";
 	private final Long groupId = 1L;
 	private final String code = "invitationCode";
@@ -224,7 +225,7 @@ class StudyGroupControllerTest {
 
 	@Test
 	@DisplayName("그룹 탈퇴 성공")
-	void deleteGroup() throws Exception {
+	void leaveGroup() throws Exception {
 		// given
 		doNothing().when(studyGroupService).deleteGroup(user,groupId);
 		// when, then
@@ -240,7 +241,7 @@ class StudyGroupControllerTest {
 
 	@Test
 	@DisplayName("그룹 탈퇴 실패 : 존재하지 않는 그룹")
-	void deleteGroupFailed_1() throws Exception {
+	void leaveGroupFailed_1() throws Exception {
 		// given
 		doThrow(new StudyGroupValidationException(HttpStatus.NOT_FOUND.value(), "존재하지 않는 그룹 입니다.")).when(studyGroupService).deleteGroup(user,groupId);
 		// when, then
@@ -256,7 +257,7 @@ class StudyGroupControllerTest {
 
 	@Test
 	@DisplayName("그룹 탈퇴 실패 : 이미 참여 안한 그룹")
-	void deleteGroupFailed_2() throws Exception {
+	void leaveGroupFailed_2() throws Exception {
 		// given
 		doThrow(new GroupMemberValidationException(HttpStatus.BAD_REQUEST.value(), "이미 참여하지 않은 그룹 입니다.")).when(studyGroupService).deleteGroup(user,groupId);
 		// when, then
@@ -268,6 +269,22 @@ class StudyGroupControllerTest {
 			.andExpect(jsonPath("$.error").value("이미 참여하지 않은 그룹 입니다."));
 
 		verify(studyGroupService,times(1)).deleteGroup(any(User.class),anyLong());
+	}
+
+	@Test
+	@DisplayName("그룹 멤버 삭제 성공")
+	void deleteUser() throws Exception {
+		// given
+		doNothing().when(studyGroupService).deleteMember(any(User.class),anyLong(),anyLong());
+		// when, then
+		mockMvc.perform(delete("/api/group/delete")
+			.header("Authorization",token)
+			.param("userId",String.valueOf(userId))
+			.param("groupId",String.valueOf(groupId))
+			.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk())
+			.andExpect(content().string("OK"));
+		verify(studyGroupService,times(1)).deleteMember(user,userId,groupId);
 	}
 
 	@Test
