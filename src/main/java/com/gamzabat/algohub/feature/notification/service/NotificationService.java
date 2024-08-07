@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.MediaType;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -86,16 +86,22 @@ public class NotificationService {
 			.forEach(entry -> sendNotification(emitter, entry.getKey(), emitterId, entry.getValue()));
 	}
 
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void send(String receiver, String message, StudyGroup studyGroup, String subContent){
-		Notification notification = createNotification(receiver, message, studyGroup, subContent);
-		notificationRepository.save(notification);
-		Map<String,SseEmitter> sseEmitter = emitterRepository.findAllEmitterStartWithByEmail(receiver);
-		sseEmitter.forEach(
-			(key,emitter) -> {
-				emitterRepository.saveEventCache(key, notification);
-				sendToClient(emitter, key, notification);
-			}
-		);
+		try{
+			Notification notification = createNotification(receiver, message, studyGroup, subContent);
+			notificationRepository.save(notification);
+			Map<String,SseEmitter> sseEmitter = emitterRepository.findAllEmitterStartWithByEmail(receiver);
+			sseEmitter.forEach(
+				(key,emitter) -> {
+					emitterRepository.saveEventCache(key, notification);
+					sendToClient(emitter, key, notification);
+				}
+			);
+			throw new RuntimeException();
+		}catch (Exception e){
+			log.error("알림 전송에 실패했습니다.",e);
+		}
 	}
 
 	@Transactional
