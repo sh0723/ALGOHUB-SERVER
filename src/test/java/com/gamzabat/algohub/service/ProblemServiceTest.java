@@ -5,11 +5,9 @@ import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Field;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
-import com.gamzabat.algohub.feature.problem.dto.GetProblemResponse;
+import com.gamzabat.algohub.feature.notification.service.NotificationService;
 import com.gamzabat.algohub.feature.problem.service.ProblemService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,9 +18,6 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 
@@ -43,6 +38,8 @@ import com.gamzabat.algohub.feature.studygroup.repository.StudyGroupRepository;
 class ProblemServiceTest {
 	@InjectMocks
 	private ProblemService problemService;
+	@Mock
+	private NotificationService notificationService;
 	@Mock
 	private ProblemRepository problemRepository;
 	@Mock
@@ -82,30 +79,31 @@ class ProblemServiceTest {
 		problemId.set(problem,20L);
 	}
 
-	// @Test
-	// @DisplayName("문제 생성 성공")
-	// void createProblem() {
-	// 	// given
-	// 	CreateProblemRequest request = CreateProblemRequest.builder()
-	// 		.groupId(10L)
-	// 		.link("https://www.acmicpc.net/problem/1000")
-	// 		.startDate(LocalDate.now().minusDays(7))
-	// 		.endDate(LocalDate.now())
-	// 		.build();
-	// 	when(groupRepository.findById(10L)).thenReturn(Optional.ofNullable(group));
-	// 	// when
-	// 	problemService.createProblem(user, request);
-	// 	// then
-	// 	verify(problemRepository, times(1)).save(problemCaptor.capture());
-	// 	Problem result = problemCaptor.getValue();
-	// 	assertThat(result.getStudyGroup()).isEqualTo(group);
-	// 	assertThat(result.getLink()).isEqualTo("https://www.acmicpc.net/problem/1000");
-	// 	assertThat(result.getNumber()).isEqualTo(1000);
-	// 	assertThat(result.getTitle()).isEqualTo("A+B");
-	// 	assertThat(result.getLevel()).isEqualTo(1);
-	// 	assertThat(result.getStartDate()).isEqualTo(LocalDate.now().minusDays(7));
-	// 	assertThat(result.getEndDate()).isEqualTo(LocalDate.now());
-	// }
+	 @Test
+	 @DisplayName("문제 생성 성공")
+	 void createProblem() {
+	 	// given
+	 	CreateProblemRequest request = CreateProblemRequest.builder()
+	 		.groupId(10L)
+	 		.link("https://www.acmicpc.net/problem/1000")
+	 		.startDate(LocalDate.now().minusDays(7))
+	 		.endDate(LocalDate.now())
+	 		.build();
+	 	when(groupRepository.findById(10L)).thenReturn(Optional.ofNullable(group));
+	 	// when
+	 	problemService.createProblem(user, request);
+	 	// then
+	 	verify(problemRepository, times(1)).save(problemCaptor.capture());
+	 	Problem result = problemCaptor.getValue();
+	 	assertThat(result.getStudyGroup()).isEqualTo(group);
+	 	assertThat(result.getLink()).isEqualTo("https://www.acmicpc.net/problem/1000");
+	 	assertThat(result.getNumber()).isEqualTo(1000);
+	 	assertThat(result.getTitle()).isEqualTo("A+B");
+	 	assertThat(result.getLevel()).isEqualTo(1);
+	 	assertThat(result.getStartDate()).isEqualTo(LocalDate.now().minusDays(7));
+	 	assertThat(result.getEndDate()).isEqualTo(LocalDate.now());
+		 verify(notificationService, times(1)).sendList(any(),any(),any(),any());
+	}
 
 	@Test
 	@DisplayName("문제 생성 실패 : 존재하지 않는 그룹")
