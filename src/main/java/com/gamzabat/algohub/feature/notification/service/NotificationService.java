@@ -98,13 +98,12 @@ public class NotificationService {
 					sendToClient(emitter, key, notification);
 				}
 			);
-			throw new RuntimeException();
 		}catch (Exception e){
 			log.error("알림 전송에 실패했습니다.",e);
 		}
 	}
 
-	@Transactional
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void sendList(List receiverList, String message, StudyGroup studyGroup, String subContent){
 		List<Notification> notifications = new ArrayList<>();
 		Map<String,SseEmitter> sseEmitters;
