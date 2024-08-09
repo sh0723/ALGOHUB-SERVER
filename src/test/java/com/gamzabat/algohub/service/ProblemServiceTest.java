@@ -7,6 +7,8 @@ import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.util.Optional;
 
+import com.gamzabat.algohub.feature.notification.domain.Notification;
+import com.gamzabat.algohub.feature.notification.repository.NotificationRepository;
 import com.gamzabat.algohub.feature.notification.service.NotificationService;
 import com.gamzabat.algohub.feature.problem.service.ProblemService;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,6 +50,8 @@ class ProblemServiceTest {
 	private GroupMemberRepository groupMemberRepository;
 	@Mock
 	private SolutionRepository solutionRepository;
+	@Mock
+	private NotificationRepository notificationRepository;
 
 	private User user;
 	private User user2;
@@ -122,6 +126,7 @@ class ProblemServiceTest {
 			.hasFieldOrPropertyWithValue("code", HttpStatus.NOT_FOUND.value())
 			.hasFieldOrPropertyWithValue("error","존재하지 않는 그룹 입니다.");
 	}
+
 	@Test
 	@DisplayName("문제 생성 실패 : 권한 없음")
 	void createProblemFailed_2(){
@@ -138,6 +143,26 @@ class ProblemServiceTest {
 			.isInstanceOf(StudyGroupValidationException.class)
 			.hasFieldOrPropertyWithValue("code", HttpStatus.FORBIDDEN.value())
 			.hasFieldOrPropertyWithValue("error","문제에 대한 권한이 없습니다. : create");
+	}
+
+	@Test
+	@DisplayName("문제 생성 성공, 알림 전송 실패")
+	void createProblemSuccess_NotificationFailed(){
+		// given
+		CreateProblemRequest request = CreateProblemRequest.builder()
+				.groupId(10L)
+				.link("https://www.acmicpc.net/problem/1000")
+				.startDate(LocalDate.now().minusDays(7))
+				.endDate(LocalDate.now())
+				.build();
+		when(groupRepository.findById(10L)).thenReturn(Optional.ofNullable(group));
+		doThrow(new RuntimeException()).when(notificationService).sendList(any(),any(),any(),any());
+		// when
+		problemService.createProblem(user, request);
+		// then
+		verify(problemRepository,times(1)).save(any(Problem.class));
+		verify(notificationService, times(1)).sendList(any(),any(),any(),any());
+		verify(notificationRepository, never()).save(any(Notification.class));
 	}
 
 	@Test

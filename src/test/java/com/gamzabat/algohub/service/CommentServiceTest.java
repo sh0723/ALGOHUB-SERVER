@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.gamzabat.algohub.feature.comment.service.CommentService;
+import com.gamzabat.algohub.feature.notification.repository.NotificationRepository;
 import com.gamzabat.algohub.feature.notification.service.NotificationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -56,6 +57,8 @@ class CommentServiceTest {
 	private SolutionRepository solutionRepository;
 	@Mock
 	private ProblemRepository problemRepository;
+	@Mock
+	private NotificationRepository notificationRepository;
 	private User user, user2;
 	private Comment comment, comment2;
 	private Solution solution;
@@ -196,6 +199,24 @@ class CommentServiceTest {
 			.hasFieldOrPropertyWithValue("code", HttpStatus.FORBIDDEN.value())
 			.hasFieldOrPropertyWithValue("error","참여하지 않은 그룹 입니다.");
 		verify(notificationService, never()).send(any(),any(),any(),any());
+	}
+
+	@Test
+	@DisplayName("댓글 작성 성공, 알림 전송 실패")
+	void createCommentSuccess_NotificationFailed(){
+		// given
+		CreateCommentRequest request = CreateCommentRequest.builder().solutionId(10L).content("content").build();
+		when(solutionRepository.findById(10L)).thenReturn(Optional.ofNullable(solution));
+		when(problemRepository.findById(20L)).thenReturn(Optional.ofNullable(problem));
+		when(studyGroupRepository.findById(30L)).thenReturn(Optional.ofNullable(studyGroup));
+		when(groupMemberRepository.existsByUserAndStudyGroup(user2,studyGroup)).thenReturn(true);
+		doThrow(new RuntimeException()).when(notificationService).send(any(),any(),any(),any());
+		// when
+		commentService.createComment(user2,request);
+		// then
+		verify(commentRepository,times(1)).save(any(Comment.class));
+		verify(notificationService, times(1)).send(any(),any(),any(),any());
+		verify(notificationRepository, never()).save(any());
 	}
 
 	@Test
