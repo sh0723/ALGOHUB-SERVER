@@ -66,8 +66,11 @@ public class ProblemService {
 
 		List<GroupMember> members = groupMemberRepository.findAllByStudyGroup(group);
 		List<String> users = members.stream().map(member -> member.getUser().getEmail()).toList();
-		notificationService.sendList(users,"새로운 과제가 등록되었습니다.", group, null);
-
+		try {
+			notificationService.sendList(users, "새로운 과제가 등록되었습니다.", group, null);
+		}catch (Exception e){
+			log.info("failed to send notification",e);
+		}
 		log.info("success to create problem");
 	}
 

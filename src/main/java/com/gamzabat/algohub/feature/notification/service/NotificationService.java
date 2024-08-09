@@ -9,7 +9,6 @@ import java.util.Map;
 
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -86,9 +85,8 @@ public class NotificationService {
 			.forEach(entry -> sendNotification(emitter, entry.getKey(), emitterId, entry.getValue()));
 	}
 
-	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	@Transactional
 	public void send(String receiver, String message, StudyGroup studyGroup, String subContent){
-		try{
 			Notification notification = createNotification(receiver, message, studyGroup, subContent);
 			notificationRepository.save(notification);
 			Map<String,SseEmitter> sseEmitter = emitterRepository.findAllEmitterStartWithByEmail(receiver);
@@ -98,12 +96,9 @@ public class NotificationService {
 					sendToClient(emitter, key, notification);
 				}
 			);
-		}catch (Exception e){
-			log.error("알림 전송에 실패했습니다.",e);
-		}
 	}
 
-	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	@Transactional
 	public void sendList(List receiverList, String message, StudyGroup studyGroup, String subContent){
 		List<Notification> notifications = new ArrayList<>();
 		Map<String,SseEmitter> sseEmitters;

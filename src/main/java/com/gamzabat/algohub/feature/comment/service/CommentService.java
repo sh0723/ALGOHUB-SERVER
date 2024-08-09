@@ -57,11 +57,14 @@ public class CommentService {
 		else
 			message = request.content().substring(0,35)+"...";
 
-		notificationService.send(solution.getUser().getEmail(),
-			user.getNickname()+"님이 코멘트를 남겼습니다.",
-			solution.getProblem().getStudyGroup(),
-			message);
-
+		try {
+			notificationService.send(solution.getUser().getEmail(),
+					user.getNickname() + "님이 코멘트를 남겼습니다.",
+					solution.getProblem().getStudyGroup(),
+					message);
+		}catch (Exception e) {
+			log.info("failed to send comment notification", e);
+		}
 		log.info("success to create comment");
 	}
 
