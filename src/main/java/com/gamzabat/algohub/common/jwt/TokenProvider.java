@@ -6,6 +6,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.stream.Collectors;
 
+import com.amazonaws.util.StringUtils;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -104,5 +106,12 @@ public class TokenProvider {
 		String token = authToken.replace("Bearer","").trim();
 		Jws<Claims> claimsJws = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
 		return claimsJws.getBody().getSubject();
+	}
+
+	public String resolveToken(HttpServletRequest request){
+		String token = request.getHeader("Authorization");
+		if (StringUtils.hasValue(token) && token.startsWith("Bearer"))
+			return token.substring(7);
+		return null;
 	}
 }
