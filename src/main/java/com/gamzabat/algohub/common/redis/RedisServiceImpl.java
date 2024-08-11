@@ -26,7 +26,7 @@ public class RedisServiceImpl implements RedisService{
     @Override
     public String getValues(String key) {
         ValueOperations<String, Object> values = redisTemplate.opsForValue();
-        if(values.get(key) != null) return "";
+        if(values.get(key) == null) return "";
         return String.valueOf(values.get(key));
     }
 
