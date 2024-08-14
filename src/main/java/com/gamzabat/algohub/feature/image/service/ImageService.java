@@ -28,6 +28,7 @@ public class ImageService {
 	private final AmazonS3 amazonS3;
 
 	public String saveImage(MultipartFile multipartFile){
+		log.info("LOG TEST");
 		if (multipartFile == null) return null;
 		String originalFilename = multipartFile.getOriginalFilename();
 		String filename = UUID.randomUUID().toString().concat(Objects.requireNonNull(originalFilename));
